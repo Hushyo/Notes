@@ -28,5 +28,4 @@
 
 git status
 
-![gitbash](https://cdn.jsdelivr.net/gh/Hushyo/Notes@img/img/202403121238686.png)
-
+![gitbash](https://cdn.jsdelivr.net/gh/Hushyo/Photo@main/img/gitbash.png)
