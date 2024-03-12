@@ -30,6 +30,6 @@ git status
 
 ![gitbash](https://cdn.jsdelivr.net/gh/Hushyo/Photo@main/img/gitbash.png)
 
-git push 只是将本地的文件传上去,本地就算把文件删除了,github上仍然存在
+git push 本地删除,github也会一起删除的
 git push origin空格:分支名 删除分支
 但是本地也得删除分支 git branch -D 名字
