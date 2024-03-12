@@ -28,4 +28,5 @@
 
 git status
 
-![gitbash](E:\PS\04item\gitbash.png)
+![gitbash](https://cdn.jsdelivr.net/gh/Hushyo/Notes@img/img/202403121238686.png)
+
