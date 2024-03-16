@@ -6,10 +6,9 @@
 二分搜索法
 在一个数组里找target,在则返回target的下标,不在则返回-1
 ```
-
 - while循环 left < right 还是 left <= right ?
 - nums[mid]>target,更新右区间,left = mid 还是 mid - 1 ?
-
+---
 首先明确 <u>区间是开还是闭</u> 是否包含 left 和 right  影响到while条件
 
 #### 左闭右闭
