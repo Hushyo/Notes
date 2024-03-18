@@ -251,3 +251,10 @@ string s = str1 + str2;
 cout << s; //123456
 ```
 
+## Lambda 表达式
+
+又叫 **lambda** 函数,匿名函数
+
+```
+[capture list]
+```
