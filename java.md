@@ -54,6 +54,8 @@ final
 
 > final int NUM_GEAR = 6
 
+---
+
 ### long,double,float
 
 #### long
@@ -65,12 +67,16 @@ final
 >
 > 不用 L 结尾也不会报错,但是要规范,得加上
 
+---
+
 #### float
 
 float 以 f/F 结尾,必须以 f/F 结尾
 浮点型判断大小 只能用 >= 或 <= 不要用 ==
 
 >  float num=1.23F
+
+---
 
 #### double
 
