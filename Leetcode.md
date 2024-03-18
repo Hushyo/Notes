@@ -13,7 +13,7 @@
 
 #### 左闭右闭
 
-**left = 0, right = nums.size()****-1** 注意是减1,nums.size()-1!
+**left = 0, right = nums.size()-1** 注意是减1,nums.size()-1!
 
 区间[1,1] 1=1 有没有意义？有 所以 left<=right
 
