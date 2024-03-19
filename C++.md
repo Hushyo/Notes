@@ -116,21 +116,21 @@ vector<typename>::iterator name;(name一般是it)
 name.函数()
 ```
 
-|             函数名              |                   函数作用                    |
-| :-----------------------------: | :-------------------------------------------: |
-|   .c**lear ($\varnothing$)**    |                   **清空**                    |
-|    **.size($\varnothing$)**     |               **返回元素个数**                |
-|    **.front($\varnothing$)**    |                **返回首元素**                 |
-|    **.back($\varnothing$)**     |                **返回尾元素**                 |
-|    **.empty($\varnothing$)**    |     **判断是否为空,空返回true,非空false**     |
-|      **.push_back(elem)**       |            **在尾部添加元素elem**             |
-|  **.pop_back($\varnothing$)**   |               **删除尾部元素**                |
-|    **.begin($\varnothing$)**    |          **返回指向首元素的迭代器**           |
-|     **.end($\varnothing$)**     |      **返回指向尾部元素下一位的迭代器**       |
-|         **.erase(pos)**         |            **删除pos[^1]位置元素**            |
-|     **.erase(first,last)**      |         **删除[first,last)[^1]元素**          |
-|     **.insert(pos,n,elem)**     |          **在pos处插入n个elem[^2]**           |
-| **.insert(pos,first,last[^3])** | **在pos处插入另一个容器中[first,last)的元素** |
+|              函数名              |                   函数作用                    |
+| :------------------------------: | :-------------------------------------------: |
+|   v.c**lear ($\varnothing$)**    |                   **清空**                    |
+|    **v.size($\varnothing$)**     |               **返回元素个数**                |
+|    v**.front($\varnothing$)**    |                **返回首元素**                 |
+|    v**.back($\varnothing$)**     |                **返回尾元素**                 |
+|    v**.empty($\varnothing$)**    |     **判断是否为空,空返回true,非空false**     |
+|      v**.push_back(elem)**       |            **在尾部添加元素elem**             |
+|  v**.pop_back($\varnothing$)**   |               **删除尾部元素**                |
+|    v**.begin($\varnothing$)**    |          **返回指向首元素的迭代器**           |
+|     **v.end($\varnothing$)**     |      **返回指向尾部元素下一位的迭代器**       |
+|         v**.erase(pos)**         |            **删除pos[^1]位置元素**            |
+|     v**.erase(first,last)**      |         **删除[first,last)[^1]元素**          |
+|     **v.insert(pos,n,elem)**     |          **在pos处插入n个elem[^2]**           |
+| **v.insert(pos,first,last[^3])** | **在pos处插入另一个容器中[first,last)的元素** |
 
 [^1]: 迭代器
 [^2]: n可以不写,默认为0
@@ -233,6 +233,24 @@ string str5(5,'2'); //结果为"22222" ,构造5个字符'2'连接而成的字符
 string str6(str2,2); //结果为"3456789"，截取第三个元素（2对应第三位）到最后
 ```
 
+|           Name            |              Function               |
+| :-----------------------: | :---------------------------------: |
+|   s.length()和s.size()    |            返回字符个数             |
+|     s.push_back('a')      |           在尾部添加字符a           |
+|   s.insert(pos,element)   |          在pos插入element           |
+|       s.append(str)       |         在尾部添加字符串str         |
+|       s.erase(pos)        |       删除迭代器pos所指的字符       |
+|    s.erase(first,last)    |    删除迭代器[first,last)的字符     |
+|     s.erase(pos,len)      |       从pos开始删除len个字符        |
+|         s.clear()         |                清空                 |
+|   s.replace(pos,n,str)    |    把从pos开始的n个字符替换为str    |
+|   s.replace(pos,n,n1,c)   | 把从pos开始的n个字符替换为n1个字符c |
+| s.replace(first,last,str) |    把[first,last)内字符替换为str    |
+|       tolower(s[i])       |             转换为小写              |
+|       toupper(s[i])       |             转换为大写              |
+
+> strlen(char*)只能用于求 C中的 char 数组,同样的 s.size() 和 s.length() 不能用于 字符数组
+
 #### 支持比较运算符
 
 **>,>=,<,<=,==,!=**
@@ -251,22 +269,24 @@ string s = str1 + str2;
 cout << s; //123456
 ```
 
-## Lambda 表达式
+
+
+## Lambda 表达式(失败)
 
 又叫 **lambda** 函数,匿名函数
 
 ```
-[capture list](parameters)mutable throw() -> returntype(statement)
-	捕获列表	  参数列表		可变规则			返回类型	函数体
+[capture list]	(parameters)	opt -> returntype {statement;};
+	捕获列表	  参数列表			选项	  返回类型		函数体
 ```
 
 捕获列表：捕获上下文的变量供Lambda函数使用,包含局部变量,捕获的变量可以直接在Lambda中使用
 参数列表:  就是参数列表,跟普通函数一样,不需要时可以连同括号一起省略
 返回类型:  返回值的类型,在结果明确时,可以不写:如结果明显是int,可以不写int,让编译器猜
-				   不要返回值时可以连同 -> 一起省略
+				   不要返回值时 ->returntype可以省略,把->returntype看成一体就行
 函数体:  不仅可以使用参数列表的参数,还能用捕获列表的参数
 
-
+最简单的lambda表达式是: **[]{};** 可以通过编译,但是没任何作用
 
 | 捕获列表形式 |           作用           |
 | :----------: | :----------------------: |
@@ -275,8 +295,65 @@ cout << s; //123456
 |     [=]      | 值传递所有父作用域的变量 |
 |    [&var]    |     引用传递变量var      |
 |     [&]      |  引用传递父作用域的变量  |
+|    [x,&y]    |    x值传递,y引用传递     |
 |     ...      |           ...            |
+
+不能重复捕获 如 [=,x] =已经捕获x了,不允许再次捕获x
+
+```c++
+auto function = []{
+	cout << "Hello World!" << endl;
+};
+傻逼编译器
+```
+
+> 为什么必须用auto? 
+> 上面一直使用auto关键字来自动推导lambda表达式的类型，那作为强类型语言的c++，这个lambda表达式到底是什么类型呢？lambda的表达式类型在c++11中被称为『闭包类型(Closure Tyep)』，是一个特殊的、匿名的、非联合(union)、非聚合(aggregate)的类类型。可以认为它是一个带有operator()的类，即防函数(functor)。因此可以使用std::function 和std::bind来存储和操作lambda表达式。
+> 原文链接：https://blog.csdn.net/bandaoyu/article/details/107390235
+
+这段代码报错的原因是在使用auto关键字时，lambda表达式中使用了x++，而auto关键字默认推导为const类型，无法修改const类型的变量。因此，x++会导致编译错误。
+
+如果你想要在lambda表达式中修改x的值，可以将auto关键字改为mutable，即将lambda表达式定义为可变的。修改后的代码如下：
+
+```
+cpp#include <iostream>
+using namespace std;
+int main()
+{
+    int x=100;
+    auto func = [x]() mutable {return x++;};
+    cout<<func();
+    return 0;
+}
+```
+
+这样就可以正常运行了。
+
+
+
+auto关键字默认推导为const类型，无法修改const类型的变量。什么意思？是x变成const类型了吗？谁是const类型？是返回值是const类型？还是lambda都是const类型
+
+auto关键字在默认情况下会进行类型推导，但是如果初始化表达式是const类型的变量，那么auto推导的结果也会是const类型。这意味着使用auto声明的变量将无法修改。
+
+在这种情况下，如果使用auto关键字声明一个变量x并初始化为const类型的变量，那么x将被推导为const类型，无法修改x的值。
+
+例如： const int a = 10; auto x = a; // x被推导为const int类型，无法修改x的值
+
+在lambda表达式中，如果使用auto关键字声明一个变量并初始化为lambda函数，那么该变量也会被推导为const类型。这是因为lambda函数默认是const的，即使没有显式指定。
+
+例如： auto lambda = { … }; // lambda被推导为const类型
+
+所以，无论是使用auto关键字声明一个变量并初始化为const类型的变量，还是将lambda函数赋值给auto声明的变量，都会导致该变量被推导为const类型。
 
 ## for循环
 
 for循环中三个表达式均可以省略,但是分号不能省略
+
+```
+for( 初始化; 判断条件; 控制条件)
+```
+
+- 初始化不写,表示不对循环变量赋初值
+- 条件不写,一直循环                    for(; ;) = while(true)
+- 控制条件不写,不控制循环变量
+
