@@ -116,21 +116,21 @@ vector<typename>::iterator name;(name一般是it)
 name.函数()
 ```
 
-|              函数名              |                   函数作用                    |
-| :------------------------------: | :-------------------------------------------: |
-|   v.c**lear ($\varnothing$)**    |                   **清空**                    |
-|    **v.size($\varnothing$)**     |               **返回元素个数**                |
-|    v**.front($\varnothing$)**    |                **返回首元素**                 |
-|    v**.back($\varnothing$)**     |                **返回尾元素**                 |
-|    v**.empty($\varnothing$)**    |     **判断是否为空,空返回true,非空false**     |
-|      v**.push_back(elem)**       |            **在尾部添加元素elem**             |
-|  v**.pop_back($\varnothing$)**   |               **删除尾部元素**                |
-|    v**.begin($\varnothing$)**    |          **返回指向首元素的迭代器**           |
-|     **v.end($\varnothing$)**     |      **返回指向尾部元素下一位的迭代器**       |
-|         v**.erase(pos)**         |            **删除pos[^1]位置元素**            |
-|     v**.erase(first,last)**      |         **删除[first,last)[^1]元素**          |
-|     **v.insert(pos,n,elem)**     |          **在pos处插入n个elem[^2]**           |
-| **v.insert(pos,first,last[^3])** | **在pos处插入另一个容器中[first,last)的元素** |
+|              函数名              |                           函数作用                           |
+| :------------------------------: | :----------------------------------------------------------: |
+|   v.c**lear ($\varnothing$)**    |                           **清空**                           |
+|    **v.size($\varnothing$)**     |                       **返回元素个数**                       |
+|    v**.front($\varnothing$)**    |                        **返回首元素**                        |
+|    v**.back($\varnothing$)**     |                        **返回尾元素**                        |
+|    v**.empty($\varnothing$)**    |            **判断是否为空,空返回true,非空false**             |
+|      v**.push_back(elem)**       |                    **在尾部添加元素elem**                    |
+|  v**.pop_back($\varnothing$)**   |                       **删除尾部元素**                       |
+|    v**.begin($\varnothing$)**    |                  **返回指向首元素的迭代器**                  |
+|     **v.end($\varnothing$)**     |              **返回指向尾部元素下一位的迭代器**              |
+|         v**.erase(pos)**         |                   **删除pos[^1]位置元素**                    |
+|     v**.erase(first,last)**      |                 **删除[first,last)[^1]元素**                 |
+|     **v.insert(pos,n,elem)**     |                  **在pos处插入n个elem[^2]**                  |
+| **v.insert(pos,first,last[^3])** | **在pos处插入另一个容器中[first,last)的元素**<br />将两个Vector合并的唯一方法 |
 
 [^1]: 迭代器
 [^2]: n可以不写,默认为0
@@ -152,6 +152,8 @@ reverse(first,last)
 **reverse**: 将[first,last)元素反转
 
 
+
+vector\<char> 转string: `string( it1, it2)` it是v的迭代器，把it1到it2内的字符转为字符串并返回
 
 
 
