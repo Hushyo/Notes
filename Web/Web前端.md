@@ -372,7 +372,7 @@ HTML5只保留了内联框架标签`<iframe>`
        这样是无效的，只能直接在它里面设置，奇怪
    ```
 
-### 表单标签
+## 表单标签
 
 `<form>`
 收集用户数据并传递给后台服务器，实现网页与用户间的沟通对话
@@ -419,108 +419,165 @@ HTML5只保留了内联框架标签`<iframe>`
    |    _top    |  顶层容器  |
    | iframename |  内联框架  |
 
-#### **\<input>**
+### 输入标签
 
-文本输入框
+输入标签
+\<input type="输入类型" name="自定义名称" />
+type属性代表输入类型，type类型如下
 
-1. type 输入框的类型
+| 类型名         | 解释                    |
+| :------------- | ----------------------- |
+| text           | 单行文本输入框          |
+| password       | 密码输入框，字符被*替换 |
+| radio          | 单选框                  |
+| checkbox       | 复选框                  |
+| submit         | 提交按钮                |
+| reset          | 重置按钮                |
+| button         | 单纯的按钮              |
+| image          | 图片形式的提交按钮      |
+| file           | 提交文件                |
+| hidden         | 隐藏输入字段            |
+| date           | 日期选择框              |
+| datetime-local | 日期加时间选择框        |
+| number         | 数字选择框              |
 
-   - text (default) 输入框
+password 输入内容变成星号*
 
-   - password 输入内容变成星号*
+checkbox
+输入框摇身一变变成复选框![image-20240629145152343](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629145152343.png)
 
-   - checkbox
-     输入框摇身一变变成复选框![image-20240629145152343](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629145152343.png)
+radio
+输入框摇身一变变成单选框
+多个单选框用 name属性分组，name属性值相同的为一组
+同一组单选框只能选择一个
 
-   - radio
-     输入框摇身一变变成单选框
-     多个单选框用 name属性分组，name属性值相同的为一组
-     同一组单选框只能选择一个
+file
+将输入框变成`上传文件`选项
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629145631619.png" alt="image-20240629145631619" style="zoom:67%;" />
 
-   - file
-     将输入框变成`上传文件`选项
-     ![image-20240629145631619](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629145631619.png)
+hidden
+不会渲染在页面里，看不到，但是可以正常提交
+多用于不需要看但是需要用的值
 
-   - hidden
-     不会渲染在页面里，看不到
-     多用于不需要看但是需要用的值
+date
+变成选择时间的框
+![image-20240629145942097](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629145942097.png)
 
-   - date
-     变成选择时间的框
-     ![image-20240629145942097](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629145942097.png)
+datetime-local
+在上述基础上可以选择当天时间
+![image-20240629150016307](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629150016307.png)
 
-   - datetime-local
-     在上述基础上可以选择当天时间
-     ![image-20240629150016307](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629150016307.png)
+number
+选择数字的框
+![image-20240629150108745](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629150108745.png)
+可以直接输入，也可以点右边的上下箭头增加/减少
 
-   - number
-     选择数字的框
-     ![image-20240629150108745](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629150108745.png)
-     可以直接输入，也可以点右边的上下箭头增加/减少
 
-     
 
-2. placeholder 
+**其他属性**
+
+| 属性        | 属性值   | 效果                         |
+| ----------- | -------- | ---------------------------- |
+| name        | 用户定义 | 控件名称                     |
+| value       | 用户定义 | 控件中文本默认值             |
+| placeholder | 用户定义 | 控件中提示性文本，不会被提交 |
+| size        | 正整数   | 控件宽度                     |
+| readonly    | readonly | 只读，不能编辑               |
+| disabled    | disabled | 初始禁用该控件，显示灰色     |
+| required    | required | 控件填写后才能提交表单       |
+| checked     | checked  | 默认选中控件                 |
+| maxlength   | 正整数   | 允许最多输入的字符数         |
+
+1. placeholder 
    该属性的值作为文本未输入时显示的内容，作为提醒
    ![image-20240629144436820](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629144436820.png)
-
-3. checked
+2. checked
    配合 type="checkbox" 使用
    如果该属性为 true 那么该复选款便是选中状态
-
-4. accept
+3. accept
    配合 type="file" 使用
    该属性为用户提醒上传文件的类型
    但是并没有限制文件类型
    ![image-20240629145817315](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629145817315.png)
-
-5. min/max
+4. min/max
 
    - 配合type=date或者另一种date时
      代表可选时间范围
      \<input type="date" min="2024-04-09">
      但是这个值必须是 yyyy-mm-dd 形式的，单数月/日用0补齐
    - 配合 type=number 使用时代表数字最大最小值
-
-6. readonly
-   只读
-   \<input readonly>
-   放在这儿就能起到只读作用，不让修改
-
-7. required
+5. required
    同样是写上就起作用
    该输入框填写完毕后表单才可以提交
    不然会提醒用户填写表单
-
-8. disabled
+6. disabled
    写上就起作用
    :不可用
    不允许修改，提交也不带他
-
-9. list
+7. list
    值为 \<datalist> 标签的  原生 id
    作为一个下拉可选可输入的菜单,不像select一样只能选
 
-**\<textarea>**
-如果 input  只是一个输入框，那么textarea便是一个输入域
-![image-20240629145000891](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629145000891.png)
+### 多行文本标签
 
-**\<label>**
+type=text只是一个单行输入框，现在引入多行输入框 
+`<textarea>` 这个元素允许文本回车换行，也叫输入域
+可选属性项
 
-1. for
-   该属性接收某个元素的id，直接接收id 而不是#id
-   表明内容的焦点会转移到该id的元素上
+```html
+<textarea cols="每行字符数" rows="显示的行数"> 文本内容 </textarea>
+```
 
-或者直接用该标签的开始和结束标签包围某个元素
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629145000891.png" alt="image-20240629145000891" style="zoom:67%;" /> 
+
+### 表记标签
+
+`<label>`
+
+可放置在`<input>`前后为其定义表记，通常为文本形式，作为其的补充说明
+显示效果与普通文本一致，但是被点击时，对应控件也会生成焦点，相当于也被点击一次
+
+在`<label>`元素的==首标签==中使用==for==属性引用对应控件的 ==id==名称
+直接接收id 而不是#id
+
+```html
+<label for="name">姓名</label>
+<input type="text" id="name"/>
+```
+
+也可以直接用该元素的首尾标签包围对应控件，无序设置id
 这样元素内容就直接连接到元素上，不用再声明 for 属性了
 
-#### \<select>
+```html
+<label>姓名 <input type="text" id="name"/></label>
+```
 
-下拉菜单选择框
+两种使用方法效果完全相同
+
+### 列表标签
+
+`<select> </select>`
+
+添加一个下拉菜单选择框
+里面至少要有一对 `<option>`
+select的四个属性
+
+| 属性名   | 属性值     | 效果                                           |
+| -------- | ---------- | ---------------------------------------------- |
+| disabled | disabled   | 禁用列表菜单                                   |
+| multiple | multiple   | 允许同时选中多个选项<br />用户按住ctrl可以多选 |
+| name     | 自定义名称 | 规定列表元素的名称                             |
+| size     | 数值       | 规定列表菜单红可见选项的个数                   |
+
+size 默认应该是1，一眼只能看到一个选项
+
 **\<option>**
-放在这里面作为选项
-该下拉菜单默认显示代码里的第一个 \<option>
+选项元素
+下拉菜单默认显示代码里的第一个 \<option>
 所以想要下拉菜单默认是空的话，第一个\<option>元素设置空
+
+value属性值是表单提交过去时，该select菜单传过去的值
+想要某一项默认选中，应该再加上 selected属性 ，而不是checked
 
 ```
 <select>
@@ -531,13 +588,12 @@ HTML5只保留了内联框架标签`<iframe>`
 </select>
 ```
 
-![image-20240629150531271](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629150531271.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629150531271.png" alt="image-20240629150531271" style="zoom:50%;" /> 
 
 
 
 **\<optgroup>**
-为option分组
-内部 label属性代表组名
+为option分组，内部 label属性代表组名
 该开始标签和结束标签内的 option 为一组
 
 ```
@@ -556,7 +612,7 @@ HTML5只保留了内联框架标签`<iframe>`
 </select>
 ```
 
-![image-20240629150833306](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629150833306.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629150833306.png" alt="image-20240629150833306" style="zoom:50%;" /> 
 
 **\<datalist>**
 声明 id 属性，为type=list的input提供下拉后的选项
@@ -564,12 +620,135 @@ HTML5只保留了内联框架标签`<iframe>`
 内部同样可以放很多 \<option> 元素
 作为下拉菜单的可选项
 
-#### \<button>
+### 按钮标签
 
-1. type
-   - button (default) 无效果
-   - submit 提交表单
-   - reset  重置表单
+`<button>`
+
+| 属性名   | 属性值                        | 效果                                               |
+| -------- | ----------------------------- | -------------------------------------------------- |
+| disabled | disabled                      | 禁用当前元素                                       |
+| name     | 自定义                        | 规定按钮名称                                       |
+| type     | button<br />submit<br />reset | 规定按钮类型                                       |
+| value    | 文本                          | 规定按钮初始值<br />按钮中文本是首尾标签中间的内容 |
+
+### 域标签
+
+`<fieldset> </fieldset>`
+以及域标题标签 `<legend></legend>` 
+
+基本用法
+
+```html
+   <fieldset>
+       <legend>域标题</legend>
+       控件1 <input type="text"><br>
+       控件2 <input type="text">
+	   控件n
+   </fieldset>
+```
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240919162027338.png" alt="image-20240919162027338" style="zoom:80%;" /> 
+
+
+
+## 多媒体
+
+### 概述
+
+**视频，音频嵌入技术**
+
+运用HTML5中新增的 `<video>`标签和 `<audio>`标签来嵌入视频或音频
+
+但是在不同浏览器上渲染出来效果也各不相同
+
+**支持的格式**
+
+HTML5支持的视频格式和音频格式
+视频格式：ogg , mp4 , Webm
+音频格式：ogg , mp3 , wav
+
+
+
+### 使用
+
+#### 视频
+
+在HTML5中，用`<video>`标签定义视频文件
+
+```html
+<video src="资源URL" controls="controls">可插入文字</video>
+```
+
+src设置视频路径，controls控制是否显示播放控件 ， 文字会在浏览器不支持该标签时显示
+视频的宽高也可以用CSS来设置，虽然在页面内看起来大小变了，但是视频的原始大小没变
+实际工作应该用视频处理软件对视频进行压缩
+
+其他属性
+
+| 属性     | 属性值                   | 效果                                                         |
+| :------- | ------------------------ | ------------------------------------------------------------ |
+| autoplay | autoplay                 | 页面载入后自动播放                                           |
+| loop     | loop                     | 视频结束重新播放                                             |
+| preload  | auto<br />meta<br />none | 出现该属性，则视频在页面加载时加载<br />并预备播放，如果有autoplay，则忽略该属性 |
+| poster   | url                      | 视频缓冲不足时，该属性值链接一个图像<br />视频会显示这个图像 |
+
+chrome在2018年1月取消了自动播放功能，即autoplay属性失效。我们想要自动播放需要为 video 标签添加 muted 属性，使其静音播放
+
+```html
+<video src="" muted=false defaultMuted=false controls> </video>
+```
+
+| 属性         |                             |
+| ------------ | --------------------------- |
+| muted        | 设置或返回音频/视频是否静音 |
+| defaultMuted | 设置或返回音频/视频是否静音 |
+
+两者属性值都有true/false
+true:静音
+false:不静音
+
+---
+
+
+
+#### 音频
+
+在HTML5中，`<audio></audio>`标签用于定义音频文件
+
+```html
+<audio src="资源URL" controls>可插入文字</audio>
+```
+
+controls同样是播放控件
+
+| 属性     | 属性值                   | 效果                                                         |
+| :------- | ------------------------ | ------------------------------------------------------------ |
+| autoplay | autoplay                 | 页面载入后自动播放                                           |
+| loop     | loop                     | 视频结束重新播放                                             |
+| preload  | auto<br />meta<br />none | 出现该属性，则视频在页面加载时加载<br />并预备播放，如果有autoplay，则忽略该属性 |
+
+### 兼容性
+
+HTML5支持的视频音频格式，浏览器不一定支持
+所以我们嵌入视频音频时，要考虑到浏览器的兼容性
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240919163600277.png" alt="image-20240919163600277" style="zoom:80%;" /> 
+
+为了防止浏览器不兼容
+现在引入了`<source>`标签，该标签可以为以上两种标签提供多个备用文件
+该标签没有尾标签
+
+```html
+<audio controls>
+    <source scr="URL" type="媒体文件类型/格式">
+    <source scr="URL" type="媒体文件类型/格式">
+    <source scr="URL" type="媒体文件类型/格式">
+    <source scr="URL" type="媒体文件类型/格式">
+</audio>
+```
+
+src指定来源
+type指定插入文件的类型和格式 如果是音频 则写 audio 格式写音频的格式 如mp3
 
 ## 单位 
 
