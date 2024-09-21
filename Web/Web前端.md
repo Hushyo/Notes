@@ -750,7 +750,114 @@ HTML5支持的视频音频格式，浏览器不一定支持
 src指定来源
 type指定插入文件的类型和格式 如果是音频 则写 audio 格式写音频的格式 如mp3
 
-## 单位 
+1. 
+
+## 新增API
+
+
+
+# Css
+
+
+
+## 引入
+
+
+
+### 样式表
+
+1. **内联样式表**又称为行内样式表
+   <元素名 style="属性名称:属性值">
+   作用范围仅在该元素内部，优先级最高
+
+   ```html
+   <p color="red"> </p>
+   ```
+
+2. 内部样式表
+   通常位于`<head> </head>`标签内部，用`<style> </style> `包围，作用范围为当前整个文档
+   优先级第二
+
+   ```html
+   <style>
+   p{
+   color:red;
+   }
+   </style>
+   ```
+
+3. 外部样式表
+   外部样式表为独立的CSS文件，后缀为.css或.CSS
+   在`<head> </head>`中间使用 `<link>`标签引用，作用范围当前整个文档
+
+   ```html
+   <link rel="stylesheet" href="文件URL">	
+   ```
+
+   优先级最低
+
+
+
+### 语法
+
+
+
+**注释**
+内部样式表和外部样式表文件中均可以使用 **`/*注释内容*/`** 这个格式进行注释
+
+
+
+**@charset**
+用在外部样式表里，用于指定当前样式表使用的字符编码
+一般写在外部样式表文件的第一行，并且需要加上分号结束。
+
+```
+@charset "utf-8";
+```
+
+
+
+**!important**
+表记CSS样式的使用优先级
+
+```html
+p{
+background-color: red !important;
+background-color: blue;
+}
+上述代码表示优先使用background-color: red语句，即段落元素的背景颜色设置为红色
+```
+
+
+
+### 单位 
+
+#### 数字
+
+数字有三种取值形式
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240921134534782.png" alt="image-20240921134534782" style="zoom:67%;" /> 
+
+#### 长度
+
+表示方法为 数值接长度单位
+可用于描述文本 图像或其他各类元素的尺寸
+
+长度取值单位可以分为相对长度单位和绝对长度单位
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240921134417151.png" alt="image-20240921134417151" style="zoom:67%;" /> 
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240921134430243.png" alt="image-20240921134430243" style="zoom:67%;" /> 
+
+#### 角度
+
+可用于描述元素变形时旋转的角度
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240921134604369.png" alt="image-20240921134604369" style="zoom:67%;" /> 
+
+#### 时间
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240921134635543.png" alt="image-20240921134635543" style="zoom: 50%;" /> 
 
 1. px 像素 绝对单位
 
@@ -765,52 +872,206 @@ type指定插入文件的类型和格式 如果是音频 则写 audio 格式写�
 5. vh 高度单位，相对于窗口高度
    vw 宽度单位，相对于窗口宽度
 
-## 新增API
 
-# Css
+
+
 
 ## 选择器
 
-### 基本
+### 通配符选择器
 
-1. 元素选择器
-   直接写元素的名字
-   p{}
-   div{}
+```
+*{}
+```
 
-2. id选择器
-   #id{}
 
-3. 类选择器
-   .className{}
 
-4. 交集选择器
-   #id.className{}  id与类组合
-   tag.className{} 元素与类组合
+### 元素选择器
 
-5. 并集选择器
-   多个选择器用`逗号`隔开
-   p,div,#id,.className{}
+也叫标签选择器？
 
-6. 后代选择器
-   空格隔开
-   div p{}  div下的所有p元素
-   div p,div{} div下的所有 div和p元素
+```
+元素名{}
+```
 
-7. 子选择器
 
-   \>隔开
-   div>p{} div的直接子元素p
 
-8. 同级紧邻选择器
-   +隔开
-   div+p{}与div元素同级且下方紧邻的第一个p
+### id选择器
 
-9. 同级选择器
-   ~隔开
-   div~p{}与div元素同级且下方的所有p
+```
+#id名{}
+```
 
-### 伪类
+
+
+### 类选择器
+
+```
+.类名{}
+```
+
+
+
+### 交集选择器
+
+交集选择器由两个选择器组成，两者之间不能有空格
+类选择器和id选择器也能组合
+
+```
+#id.className{}  id与类组合
+tag.className{} 元素选择器与类选择器组合
+```
+
+
+
+### 并集选择器
+
+多个选择器用`逗号`隔开，这几个选择器共享样式
+
+```
+p,div,#id,.className{}
+```
+
+
+
+### 后代选择器
+
+空格隔开
+
+```
+div p{}  div下的所有p元素
+div p,div{} div下的所有 div和p元素
+选择器套选择器
+```
+
+\>隔开
+
+```
+div>p{} div的直接子元素p
+```
+
+
+
+### **兄弟选择器**
+
+**同级紧邻选择器**
++隔开
+
+```
+div+p{}与div元素同级且下方紧邻的第一个p
+```
+
+**同级选择器**
+~隔开
+
+```
+div~p{}与div元素同级且在下方的所有p
+```
+
+
+
+
+
+### 属性选择器
+
+属性选择器可以根据标签的 属性 及 属性值 来选择对应标签，从而为标签设置差异化的CSS样式
+下面value的双引号要不要都行
+
+**E[arrtibute]**
+
+选取标签名称为E，并且定义了attribute属性的标签。
+E可以省略，如果省略则表示可以匹配满足条件的任意标签
+
+```
+div[id] 选取声明了id属性的div元素
+[id] 选取所有声明了id的元素
+```
+
+
+
+**E[attribute=value]**
+
+选取标签名称为E，并且定义了attribute属性，该属性就是value属性值的标签，E也可以省略
+
+```
+div[align=center] 选取包含align属性且属性值只为center的div标签
+[align=center]  选取所有包含align属性且属性值只为center的标签
+```
+
+
+
+**E[attribute~=value]**
+
+选取标签名称为E，定义了attribute属性，该属性包含某个value属性值的标签
+以 class属性举例，一个元素的class属性可以声明多个来完成叠加样式，而这多个里面只要含有 value ，该元素就能被选中
+
+```
+div[class~="red"]
+<div class="red content">就能被选中
+```
+
+
+
+**E[attribute|=value]**
+
+选取带有value属性值或以 value- 为前缀的属性值的元素 
+
+```
+img[alt|="flower"]
+选中所有alt属性以flower-开头的img 元素
+或者alt就等于flower的img元素
+
+<img alt="flower">  可以
+<img alt="flower-a"> 可以
+<img alt="flowera">	 不行，这个flower是前缀
+```
+
+
+
+**E[attribute^=value]**
+
+选择标签名称为E，并且定义了attribute属性，属性值**前缀**为value字符的标签
+
+```
+div[id^="section"]
+
+<div id="section-a">
+<div id="sectiona">
+<div id="section">
+三者都可以！
+```
+
+
+
+**E[attribute$=value]**
+
+选择属性值后缀为value字符的标签
+
+```
+div[id$=section]
+
+<div id="asection">
+<div id="a-section">
+<div id="section">
+都可以！
+```
+
+
+
+**E[attribute\*=value]**
+
+选择属性值包含value字符的标签
+
+```
+div[id*=a]
+
+<div id="asd">
+只要属性值字符串中包含value 就行
+```
+
+
+
+### 伪类选择器
 
 选择元素的特殊选择器，它允许你在特定状态下选择元素
 伪类不同于普通的CSS类选择器，它们用于选择元素的特定状态或位置，而不是选择具有特定类名的元素
