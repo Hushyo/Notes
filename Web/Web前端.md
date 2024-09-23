@@ -1076,39 +1076,209 @@ div[id*=a]
 选择元素的特殊选择器，它允许你在特定状态下选择元素
 伪类不同于普通的CSS类选择器，它们用于选择元素的特定状态或位置，而不是选择具有特定类名的元素
 
-伪类选择器通常与基本选择器组合使用
+伪类通常以 单个冒号:开头
+伪元素以两个冒号 :: 开头
 
-1. :checked
-   选中时的样式 
-2. :hover
-   鼠标悬浮时
-   a:hover{} a元素在鼠标悬浮时的样式
-3. :visited
-   点击过后
-   a:visited{} 点击过的a元素的样式
-4. :active
-   点击时
-5. :focus
-   具有焦点时
-6. :link
-   未访问时
-7. :disabled
-   禁用时
-8. :enabled
-   启用时
-9. :nth-child()
-   该选择器选取该元素的父元素的第 N 个子元素，与类型无关
-   假如A元素是B元素的父元素
-   B:nth-child()意思就是选择B元素的父元素A的指定子元素，根据里面的值选择B
-   选择列表中的偶数标签`:nth-child(2n)`
-   选择列表中的奇数标签 `:nth-child(2n-1)`
-   选择从第6个开始的，直到最后`:nth-child(n+6)`  没有 - 从多少开始
-   选择第1个到第6个 `:nth-child(-n+6)`  有 - 到多少
-   者结合使用，可以限制选择某一个范围，选择第6个到第9个 `:nth-child(n+6):nth-child(-n+9)`
+#### 结构化伪类
 
-   nth-last-child(n) 
-   选择器匹配属于其元素的第 N 个子元素的每个元素，不论元素的类型，从最后一个子元素开始计数
-   选择列表中的倒数第n个标签 n为数字 :nth-last-child(n) 
+**:root选择器**
+匹配文档的根标签，根标签指的是 `<html>`标签
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+</body>
+</html>
+```
+
+因此使用:root对所有页面内的标签都生效
+
+
+
+**:not选择器**
+
+排除设置的标签或属性，或者说是选择不匹配某元素的标签；
+通常用作交集选择器(我认为嗷)
+
+```html
+h3:not(.not)
+选择没有类名not的h3标签
+:not(.not)
+选择没有类名not的所有标签
+所以最好组合成为交集选择器
+```
+
+
+
+**:only-child选择器**
+
+用来选择没有兄弟元素且没有子元素的元素，但它需要直接作用于那个元素上，而不是它的父元素
+
+```
+<div>
+    <p>
+        blue
+    </p>
+</div>
+
+p:only-child 作用于这个p上
+而不是用 div:only-child
+
+<div>
+    <p>blue
+    <div>a</div>
+    </p>
+</div>
+这样的p也用不了，因为它有子元素
+```
+
+
+
+**:first-child/last-child**
+
+用于选择其父标签中的第一个子元素和最后一个子元素
+同样直接作用于那个元素上，而不是它的父元素
+
+```html
+    <style>
+        p:first-child{
+            color:blue;
+        }
+    </style>
+    <div>
+    <p>1
+    <div>a</div>
+    </p>
+    <p>2</p>
+    <p>3</p>
+	</div>
+```
+
+1变蓝,23不变，因为只有1是其父元素中的第一个子元素
+而a也没变蓝，因为`p:first-child` 选择器只影响 `p` 标签，并不会影响嵌套在 `p` 标签内部的其他元素
+
+**:nth-child(n)和:nth-last-child(n)**
+
+first和last 只能选第一个和最后一个
+现在引入这种选择器，可以选择第二个，第三个，倒数第二个第三个，或者是奇数个，偶数个
+
+```
+:nth-child(2) 选择其父标签中的第二个子元素
+:nth-last-child(2) 选择其父标签中的倒数第二个子元素
+```
+
+**:first-of-type和:last-of-type**
+
+用于选择其父标签中第一个/最后一个特定类型的子标签
+
+**:nth-of-type(n)和:nth-last-of-type(n)**
+
+用于选择其父标签中第n个/倒数第n个特定类型的子标签
+
+**:empty**
+
+选择没有子标签或者内容为空的容器
+文字也算内容嗷
+
+```html
+<div>这是一个有内容的div</div>
+<div></div>
+<span>这是一个有内容的span</span>
+<span></span>
+div:empty {
+    border: 2px solid red;
+}
+span:empty {
+    background-color: yellow;
+}
+第二个div和第二个span会被选中
+```
+
+**:target**
+
+用于选择当前活动的锚点目标元素
+这通常与 URL 的锚点（hash）一起使用，当浏览器的地址栏中包含一个锚点，如 `#section1`，那么 `id` 为 `section1` 的元素就会被选中
+
+```html
+<div id="a">a</div>
+<div id="b">b</div>
+<a href="#a">a变色</a>
+<a href="#b">b变色</a>
+ :target{
+            background:yellow;
+        }
+注意是锚点，点了之后对应id的元素就匹配上了
+```
+
+
+
+#### 状态化伪类
+
+超链接的四种状态化伪类选择器
+
+:link
+未访问时的默认样式
+
+:hover
+鼠标悬浮在元素上时样式
+a:hover{} a元素在鼠标悬浮时的样式
+
+:visited
+超链接被访问后的样式
+a:visited{} 点击过的a元素的样式
+
+:active
+鼠标点击不动时
+
+这四种选择器对排列顺序是有要求的
+通常按照 a:link a:visited a:hover a:active顺序书写
+否则定义的样式可能不管用
+
+:focus
+具有焦点时
+
+:checked
+元素被选中时的样式 
+
+:disabled
+禁用时
+
+:enabled
+启用时
+
+
+
+#### 伪元素选择器
+
+伪元素用单冒号兼容性更好，但是为了规范，最好用双冒号
+
+**:before**
+
+用于在被选取的标签前面插入内容，但是在使用该选择器时
+必须定义content属性来指定要插入的具体内容
+
+```
+标签名:before
+{
+    content:文字/url();
+    被插入的可以是文字也可以是图像
+}
+```
+
+**:after**
+
+用于在被选取的标签后面插入内容，用法与前者相同
+
+
+
+
+
+
 
 ## 显示类型
 
