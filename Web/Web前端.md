@@ -1297,6 +1297,193 @@ a:visited{} 点击过的a元素的样式
 
    声明后，该元素变成弹性容器，内部的直接子元素变为弹性项
 
+
+
+## 边框/背景
+
+
+
+### 边框
+
+|    属性名     |     效果     |
+| :-----------: | :----------: |
+|    border     |   设置边框   |
+| border-radius | 设置圆角边框 |
+|  box-shadow   | 设置阴影边框 |
+| border-image  | 设置图片边框 |
+
+
+
+##### **圆角边框**
+
+border-radius: length|percentage
+length 使用长度规定边框圆角的半径
+percentage使用百分比规定圆角半径
+两者均不可为负值
+
+```
+p{border-radius:20px;}为p元素设置半径为20像素的圆角边框
+```
+
+圆角边框可以分别设置四个角
+
+| 属性                       | 效果   |
+| -------------------------- | ------ |
+| border-raidus              | 四个角 |
+| border-top-left-radius     | 左上角 |
+| border-top-right-radius    | 右上角 |
+| border-bottom-left-radius  | 左下角 |
+| border-bottom-right-radius | 右下角 |
+
+取值均可以是长度或者百分数
+
+
+
+##### 阴影边框
+
+为边框添加阴影，默认值为none,即无阴影效果
+
+box-shadow: x,y,width,color
+分别标识 x偏移值，y偏移值，羽化半径（阴影宽度），颜色
+想要使用第三个参数，必须先指定前两个参数 1px 2px 3px; 
+如果只有两个数字参数，那么第三个参数默认0
+
+x>0 右偏移，x<0 左偏移
+
+
+
+##### 图像边框
+
+| 属性名              | 效果                                   |
+| ------------------- | -------------------------------------- |
+| border-image-source | 指定图像来源，默认none                 |
+| border-image-slice  | 设置图片的分割方式                     |
+| border-image-width  | 边框厚度                               |
+| border-image-outset | 图片超出边框的量                       |
+| border-image-repeat | 设置图片的平铺状态                     |
+| border-image        | 复合属性，可以一次性定义边框的全部设置 |
+
+1. **设置边框图像**：使用 `border-image-source` 属性来指定边框图像的路径。
+
+2. **调整边框图像**：使用 `border-image-slice` 来定义图像的哪一部分用于边框。
+
+3. **设置边框宽度**：使用 `border-image-width` 来定义边框的宽度。
+
+4. **设置边框偏移**：使用 `border-image-outset` 来定义边框图像向外扩展的距离
+
+   定义了width后才会出现边框
+
+border-image-source值是图片的来源，应该写作 url("具体URL")  这种形式
+
+border-image-slice 属性有三种取值 默认100%
+number 数值规定宽度，可以是整数，浮点数，不能是负数
+percentage 百分比规定宽度，不能是负数
+fill 保留裁剪后的区域，这部分区域由 repeat规定
+
+border-image-repeat有三种取值
+ repeat 重复平铺方式填充边框，图片超出的部分会被截断
+round 重复平铺填充，图片根据边框尺寸动态调整至刚好能铺满整个边框
+stretch 拉伸图片方式填充边框，默认是这个
+
+border-image是他们所有的简写模式 声明顺序如下
+source,slice,width,outset,repeat
+none 100% 1 0 stretch 这是他们的默认值，如果其中部分属性不写，则取默认值
+
+如果同时设置了 border-style和 border-image 优先显示  border-image
+
+
+
+### 背景
+
+| 属性名            | 效果                   |
+| ----------------- | ---------------------- |
+| background-clip   | 定义背景图片的绘制区域 |
+| background-origin | 定义背景图片的位置     |
+| background-size   | 定义背景图片的尺寸     |
+
+
+
+background-clip用于裁剪元素的背景图片或颜色区域，使其只显示指定的区域内容
+background-clip有四种取值
+padding-box:只保留元素内边距之内的背景，包括内边距
+border-box：只保留元素边框之内的背景，包括边框
+content-box：只保留元素内容区域的背景，这个是默认值
+text：只保留前景内容的形状，其他区域去掉，想用这个取值必须把属性名称写成 -webkit-background-clip
+
+background-origin属性用于裁剪元素的背景图片，必须与background-image配合使用，否则没有图片来源无法对图片定位
+background-origin有三种取值
+padding-box:从元素内边距开始显示图像，这是默认值
+border-box：从元素边框开始显示图像
+content-box:从元素内容区域开始显示图像
+
+background-size用于定义背景图片的大小
+background-size: bg-size[,bg-size];
+
+bg-size有五种取值
+length:长度值规定图片大小，不可负值
+percentage:百分比规定图片大小，不可负值
+auto：图片真实大小
+cover：图片等比例缩放至完全覆盖容器，可能有部分图片超出容器
+contain:图片等比例缩放到宽度或高度与容器一直，图片始终在容器中，不会超出容器
+
+```
+background-size:200px;图片宽200像素，高度等比例缩放
+background-size:200px 300px 图片宽200，高300
+```
+
+
+
+## 文本/字体
+
+
+
+### 文本
+
+两种文本效果
+
+| 属性名      | 效果           |
+| ----------- | -------------- |
+| text-shadow | 为文本添加阴影 |
+| word-wrap   | 长单词强制换行 |
+
+text-shadow与box-shadow用法一样
+
+```
+text-shadow:1px 2px 3px black;
+```
+
+word-wrap规定文本的换行规则
+
+word-wrap: normal|break-word;
+
+有两种取值
+normal:默认值，只允许在断字点换行，如果单词较长则直接溢出不换行 无换行效果
+break-word:文本在边界内换行，单词较长则直接断开强制换行
+
+### 字体
+
+CSS3中通过@font-face的规则，网页可以显示任何字体
+语法规则如下
+
+```html
+@font-face{
+font-family:"自定义字体名称";
+src:url('url地址')[format(<string>)]
+}
+font-family的名称可以自定义，使用时使用这个名称即可
+举例
+@font-face{
+font-family:'diyfont';
+src:url('diyfont.ttf')format('turetype')
+}
+    
+p{
+    font-family:'diyfont'
+    }
+```
+
+
+
 ## 盒子
 
 ### 元素组成
@@ -1417,6 +1604,8 @@ width/height实际上是元素内容的宽高
    - center 中心对齐
    - top 顶部对齐
 
+
+
 ## position
 
 1. static (default)
@@ -1430,9 +1619,13 @@ width/height实际上是元素内容的宽高
    **无敌悬浮**，图层在其他之上，不参与页面的渲染
 4. fixed
    相对于窗口定位
-   **无敌悬浮**，不参与页面渲染计算
+   **无敌悬浮**，不参与页面渲染计算'
 
-## overflow
+
+
+## 变形/动画
+
+### overflow
 
 对于溢出容器部分的处理方式
 
@@ -1445,16 +1638,68 @@ width/height实际上是元素内容的宽高
 4. auto
    自动，基于内容长度决定给不给滚动条
 
-
-
-## transition
-
 ### transition
 
-过渡，在给定时间内平滑改变属性值
-一：指定属性值；二：指定时间
+transition动画又称为过渡动画，在指定时间内让元素从原始样式转变为新的样式
 
-是将要变换的元素声明该属性值，而不是元素变换目标声明 transition
+过渡，在给定时间内平滑改变属性值，一：指定属性值；二：指定时间
+
+| 属性名                     | 解释                                     |
+| -------------------------- | ---------------------------------------- |
+| transition-property        | 指定对何种CSS属性渐变处理                |
+| transition-duration        | 指定transition动画的时间                 |
+| transition-timing-funciton | 指定transition动画的渐变速度，缺省值ease |
+| transition-delay           | 指定transition动画的延迟时间，缺省值0s   |
+| transition                 | 复合属性，一次性定义以上四个属性         |
+
+transition-property属性三种取值
+none:默认值
+all：所有属性都渐变
+**transition-property**：指定属性渐变，如果有多个属性，用逗号隔开
+
+```
+transition-poperty: width,height,background; 
+```
+
+**transition-duration**: 时间
+用于指定渐变动画时长，时间越长变化越慢，单位为秒或者毫秒，如果是0则瞬间切换
+
+```
+transition-duration:0s
+```
+
+
+
+**transition-timing-function**
+用于设置渐变速率
+transition-timing-function: 速率值，常见有六种可以选择
+linear：匀速
+ease:均匀变慢
+ease-in加速
+ease-out减速
+ease-in-out先加速后减速
+cubic-bezier 使用贝塞尔函数自定义速度变化
+
+
+
+**transition-delay**
+设置渐变动画延迟播放时间
+transition-delay:时间
+毫秒或者秒，跟duration用法相同
+
+**transition**
+复合属性，可以快捷设置上述四个属性，常用顺序为
+transition-property,transition-duration,transition-timing-function,transition-delay
+
+```
+可以一次性设置多个，用逗号隔开即可
+transition:
+background-color 10s ease-in 10s,
+color 10s,
+width 10s;
+```
+
+将要变换的元素声明该transition属性值，而不是元素变换结果声明transition
 
 ```
 div.trans{
@@ -1466,58 +1711,63 @@ transition: width 2s;
 }不要声明在变化后的样式里，没有用
 ```
 
-可以一起声明多个  用逗号隔开
-transition: width 2s, height 4s;
-
-一起声明多个有另一种形式
-transition-poperty: width,height,background;   transition-poperty 用来声明会变化的属性
-transition-duration: 1s,2s,3s;								transition-duration 用来声明变化时间，一 一对应
 
 ### transform
 
-transform也是一个属性，可以作为   transition 指定的渐变属性值： transition: transform 2s;
-transform有三种值
+transform属性用于元素变形，可以实现对元素进行移动收缩旋转等2D动画效果
 
-1. translate
-   用于移动元素的位置    
-   
-   - translate( x , y, z ) 
-     两个参数，第一个是水平，第二个是垂直 第三个是？不常用；正数右下  负数左上；
-     只写一个参数时，这个参数给了x，y是0
-   
-     ```
-     transform: translate(100px,50px);
-     水平右移100px，垂直下移50px；   
-     transform: translate(100px);
-     水平右移100px
-     ```
-   
-   - translateX(x) 水平
-   
-   - translateY(y) 垂直
-   
-   - translateZ(z) 可能是图层呢？
-   
-2. rotate
-   用于旋转元素的角度
-   同上有四种取值，第一种是后面三种合起来的简便写法
+这是一个属性，用法
+transform: 方法  如下
+transform: translate(x,y);
 
-   - rotate(x,y,z)
-     正的是顺时针, x的转轴垂直于屏幕 y的转轴是屏幕的竖线，z的转轴我不好说
-     也是只写一个时先给了x
-   - rotateX(x)
-   - rotateY(y)
-   - rotateZ(z)
+| 方法名          | 效果                                                         |
+| --------------- | ------------------------------------------------------------ |
+| translate(x,y)  | 元素移动到指定位置                                           |
+| rotate(degree)  | 元素顺时针旋转指定角度<br />负数则是逆时针旋转               |
+| scale(x,y)      | 元素尺寸缩放至指定倍数<br />x指定宽度，y指定高<br />只有一个参数等比例 |
+| skew(xdeg,ydeg) | 围绕x轴和y轴翻转元素<br />skew(20deg,10deg)横向倾斜20度，纵向倾斜10度 |
+| matrix（）      | 矩阵，先不写                                                 |
 
-3. scale
-   用于改变元素的尺寸（缩放）
+translate
+用于移动元素的位置    
 
-   - scale(x,y)
-     分开设置水平，垂直方向缩放的比例
-   - scale(n)
-     等比例缩放
+- translate( x , y, z ) 
+  两个参数，第一个是水平，第二个是垂直 第三个是？不常用；正数右下  负数左上；
+  只写一个参数时，这个参数给了x，y是0
 
-## shadow
+  ```
+  transform: translate(100px,50px);
+  水平右移100px，垂直下移50px；   
+  transform: translate(100px);
+  水平右移100px
+  ```
+
+- translateX(x) 水平
+
+- translateY(y) 垂直
+
+- translateZ(z) 可能是图层呢？
+
+rotate
+用于旋转元素的角度
+同上有四种取值，第一种是后面三种合起来的简便写法
+
+- rotate(x,y,z)
+  正的是顺时针, x的转轴垂直于屏幕 y的转轴是屏幕的竖线，z的转轴我不好说
+  也是只写一个时先给了x
+- rotateX(x)
+- rotateY(y)
+- rotateZ(z)
+
+scale
+用于改变元素的尺寸（缩放）
+
+- scale(x,y)
+  分开设置水平，垂直方向缩放的比例
+- scale(n)
+  等比例缩放
+
+### shadow
 
 元素有两种shadow属性
 
@@ -1530,11 +1780,11 @@ transform有三种值
 text-shadow: 1px 2px 3px color;
 第一个 x  偏移量  第二个 y 偏移量 第三个 羽化半径 第四个 阴影颜色
 
-## float
+### float
 
 元素只能左右，不能上下浮动
 
-## flex
+### flex
 
 弹性布局，弹性项会随着窗口自动缩放，而不像写死的间距，窗口不够大就显示不出来
 弹性布局从某个容器变为弹性容器开始
@@ -1755,13 +2005,29 @@ body {
 
 这样就平均分了
 
-# JS
+# JavaScript
+
+使用JS最好先写上这个
+
+```
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+```
 
 ## Introduction
 
-**JavaScript**
-<font color = grey>直译式客户端脚本语言，无需预编译，由浏览器直接解释运行</font>
-<font color = grey>动态，无需Web服务器即可响应用户输入</font>
+**JavaScript**是一种基于**对象和事件驱动**并具有相对安全性的**客户端**脚本语言，浏览器可以直接编译
+举例：数字日历，跑马灯
+
+java是强类型语言，javascript是弱类型语言
+强类型：开辟变了存储空间，定了空间将来存储数据的数据类型，只能存储固定类型数据
+弱类型：开辟变量存储空间，存啥类型数据都行
+
+具有安全性，简单些，动态性，跨平台性
+
+完整js实现由三部分组成
+ECMAScript：核心标准
+DOM:文档对象模型
+BOM:浏览器对象模型
 
 HTML定义了用户互交的事件，当事件发生时可执行指定JS代码
 
@@ -1781,27 +2047,94 @@ HTML定义了用户互交的事件，当事件发生时可执行指定JS代码
 <font color=229453>举例，将 HTML 代码与 JS 代码耦合</font>
 ![image-20240622144755990](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622144755990.png)
 
-## Where
+## 如何使用？
 
-<font color = red> JS代码必须放在标签`<script> </script>`里面</font> 如:
-![image-20240622145336745](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622145336745.png)
+JavaScript有两种使用方式，一种是直接添加在HTML文档中，另一种是写到外部JavaScript文件，再在HTML中引用该文件
+但是 JS代码必须放在标签`<script> </script>`里面
 
-<font color = red> 而这个标签`<sscript>`可以放在任何地方，body里、head里···</font>
+
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622145336745.png" alt="image-20240622145336745" style="zoom:67%;" /> 
+
+而这个标签`<script>`可以放在任何地方，body里、head里···
+
 但是行业规范：**放在 body 最底部**
 
 > 浏览器加载页面需要时间，加载JS代码也需要时间，用户看到页面加载完成后才会开始操作，所以我们也让网页先加载，后加载JS
 
 
 
-与CSS相似，当一段JS代码在多个HTML里使用时，可以单独创建JS文件
-![image-20240622145730625](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622145730625.png)
 
 
-
-而这些JS文件引入的方式是：
+与CSS相似，当一段JS代码在多个HTML里使用时，可以单独创建JS文件 而这些JS文件引入的方式是：
 `<script src="文件地址"> </script>script>`
 
-![image-20240622145753138](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622145753138.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622145753138.png" alt="image-20240622145753138" style="zoom:80%;" /> 
+
+
+
+
+
+**内部JS使用举例**
+
+三种消息对话框
+
+1. 警告框
+   alert(message)
+
+   ```html
+   alert("警告")
+   ```
+
+2. 确认框
+   confirm(message)
+
+   ```
+   confirm("是否确认")
+   ```
+
+   <img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240925221615614.png" alt="image-20240925221615614" style="zoom: 50%;" /> 
+
+   点了确认后，这个函数还会有返回布尔值 
+
+   ```
+   var inp=confirm("是否确认")
+   if(inp==true){
+   document.write("确认")
+   }else{
+   document.write("取消")
+   }
+   ```
+
+3. 提示框
+   prompt(text,defaultText)
+
+   ```
+   prompt(”这是提示框","默认文本")
+   ```
+
+   <img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240925221838212.png" alt="image-20240925221838212" style="zoom:50%;" /> 
+
+   这个点击确定后也有返回值，返回值就是这个框里的内容，可以接收
+
+   ```
+   var ys=prompt("这是提示框")
+   if(ys!=''){
+   document.write("你好")
+   }
+   ```
+
+   
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1857,7 +2190,69 @@ let x="A"+16+4->A164
 如果Number在前面，按number加。直到遇到String
 如果String在前面，后面的全部按照String来直接拼接
 
-## Syntax
+## 语法
+
+JavaScript对大小写严格区分，无论是变量，函数名，运算符或者其他，大小写不同那就是不同的内容
+
+JavaScript分号不必要，但是最好加上
+
+JavaScript注释
+单行注释： 两个斜杠 //
+多行注释: 	/* */
+
+JavaScript代码块 {  }
+
+
+
+## JavaScript变量
+
+### 变量声明
+
+JavaScript是弱类型语言，所有数据类型统一用  关键词 var声明
+
+```
+var x = 2;
+var msg = "Hello JavaScript"
+var name;
+```
+
+当变量的赋值为文本时，需要用单引号或者双引号括起来
+
+JavaScript可以用一个var同时定义多个变量，也可以赋不同值
+
+```
+var x1,x2,x3;
+var x1 = 1,x2="hello", x3;
+```
+
+由于是弱类型语言，所以同一个变量可以存放不同类型的值
+
+```
+var x = 99;
+x = "hello"
+那么x存的值从数字99变成字符串hello
+```
+
+变量的声明不是必须的，可以不用关键词var声明
+
+```
+msg1 = "hello";
+msg2 = "JavaScript"
+msg3 = msg1 + msg2
+alert(msg3)//结果是 helloJavaScript
+```
+
+当程序遇到未声明过的名称时，会使用该名称自动创建一个变量并继续使用
+
+变量名字的首位字符必须是26个字母或者下划线__或者美元符号$
+ 其他位置随意
+
+JavaScript变量命名不能和现有关键字和保留字重复
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240925225316489.png" alt="image-20240925225316489" style="zoom: 67%;" />
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240925225327161.png" alt="image-20240925225327161" style="zoom:67%;" /> 
+
+
 
 JS基于ES脚本语言规范实现，因此**JS的语法**是：
 
