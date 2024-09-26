@@ -2585,6 +2585,88 @@ return `${this.firstName}/${this.lastName}`;
 
 
 
+### 类型转换
+
+1. 转换成字符串
+   布尔型和数字类型可以用 toString() 方法把值转换为字符串类型
+
+   布尔型的 toString方法只返回 true或者false,因为布尔值只有 true或者false
+
+   ```
+   var x = true
+   x.toString() //true
+   ```
+
+   数字类型使用 toString() 方法有两种模式，分为默认模式和基数模式
+   默认模式中,toString()不带参数直接使用，此时，用任何形式表示的数字都会转换为十进制数字显示
+
+   ```
+   var x1=99.90;
+   var x2=1.25e3;
+   x1.toString(); //99.9
+   x2.toString(); //1250
+   ```
+
+   基数模式，需要在toString()的内部填入一个指定的参数，根据参数把原始数据转化为二进制，八进制，或者十六进制
+   什么？你问十进制在哪？他不是在默认模式里吗
+
+   ```
+   var x = 10
+   x.toString(2) 转为2进制
+   x.toString(8) 转为2进制
+   x.toString(16) 转为2进制
+   ```
+
+2. 转换成数字
+   JS提供了两种将String类型转换为Number类型的方法
+   parseInt() 和 parseFloat()
+   前者转换为整数，后者转换为浮点数，仅适用于对String的转换，其他类型返回值是NaN
+
+   parseInt() 从左到右检查每个位置上的字符，如果是有效数字则转化为Number类型，发现不是数字就停，返回至此已经转换的值
+   如果第一个就不是有效数字，直接返回NaN.  由于这个是转换整数 所以小数点不算有效数字，从而终止检测和转换
+
+   ```
+   var x = 123hhh34
+   parseInt(x) //124
+   var y = hh123hh23
+   parseInt(y) //NaN
+   ```
+
+   该方法还可以设置第二个参数，同样是 2，8，10，16转换成各自进制的数字
+
+   特殊情况：如果字符串原始数据为十进制数，但是开头是0，那么需要用第二个参数强调一下转换进制，否则会被转为八进制
+
+   ```
+   var x = "010"
+   parseInt(x) //8
+   parseInt(x,10) //10
+   parseInt(x,8) //8
+   ```
+
+   parseFloat()与前者相似，不过**首次出现**的小数点认为是有效字符，但是后面的小数点依然是无效字符
+
+   ```
+   var x = "hello3.14"  parseFloat(x) //NaN
+   var y = "3.14hello"  parseFloat(y) //3.14
+   var z = "3.14.15"	 parseFloat(x) //3.14	
+   ```
+
+   还有不同之处，就是只接收十进制数，如果八进制数前面带有0，会直接忽略这个0，按十进制数看
+
+   ```
+   var x = "010"
+   parseInt(x) //10
+   ```
+
+   而接收了十六进制数，十六进制由 0x开头，因此先忽略这个0后检测的第一个字符为无效字符 返回NaN
+
+### 强制类型转换
+
+一些值无法通过 toString parseInt parseFloat 转换，例如null undefined等
+此时可以用JS中的强制转换对其转换
+
+
+
 ## 对象类型
 
 JS对象分为 本地对象 内置对象 宿主对象 三种
@@ -2596,42 +2678,145 @@ JS对象分为 本地对象 内置对象 宿主对象 三种
 
 分为四种 数组Array  日期Date 正则表达式RegExp  对象 Object
 
-1. 数组Array
-   用于在单个变量里存储一系列的值
+#### 数组Array
 
-   ```
-   var mobile = new Array();
-   var mobile[0]="apple";
-   var mobile[1]="huawei";
-   var mobile[2]="xiaomi";
-   ```
+用于在单个变量里存储一系列的值
 
-   数组是从0开始算的，Array类型的特点是无需在一开始就声明数组的具体元素数量，可以随用随加
-   如果一开始就知道有什么元素，可以用逗号隔开直接创建
+```
+var mobile = new Array();
+var mobile[0]="apple";
+var mobile[1]="huawei";
+var mobile[2]="xiaomi";
+```
 
-   ```
-   var mobile= new Array("apple","huawei","xiaomi")
-   或者
-   var mobile=["apple","huawei","xiaomi"]
-   ```
+数组是从0开始算的，Array类型的特点是无需在一开始就声明数组的具体元素数量，可以随用随加
+如果一开始就知道有什么元素，可以用逗号隔开直接创建
 
-   Array对象包括了length属性，代表数组里元素个数 没有则返回0
+```
+var mobile= new Array("apple","huawei","xiaomi")
+或者
+var mobile=["apple","huawei","xiaomi"]
+```
 
-   ```
-   var mobile= new Array("apple","huawei","xiaomi")
-   mobile.length //3
-   ```
+Array对象包括了length属性，代表数组里元素个数 没有则返回0
 
-2. 日期Date
-   有四种初始化方式
+```
+var mobile= new Array("apple","huawei","xiaomi")
+mobile.length //3
+```
 
-   ```
-   
-   ```
+#### 日期Date
 
-   
+有四种初始化方式
+new Date() 获取当前的日期和时间
+
+```
+alert(new Date())
+```
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240926170304208.png" alt="image-20240926170304208" style="zoom:50%;" /> 
+
+new Date(dateString) 使用表示日期时间的字符串定义时间
+
+```
+alert(new Date("May 10,2000,12:12"))
+```
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240926170546904.png" alt="image-20240926170546904" style="zoom:50%;" /> 
+
+new Date(milliseconds)  使用1970年1月1日8时到指定日期的毫秒数定义事件，如输入12
+
+```
+alert(new Date(1000))  从1970年1月1日 过了1000毫秒，也就是  1秒
+```
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240926170703969.png" alt="image-20240926170703969" style="zoom:50%;" /> 
+
+new Date(year,month,day,hours,minutes,seconds,milliseconds)
+自定义年月日时分秒毫秒，缺项默认为0
+
+```
+alert(new Date(2024,9,26,17,8,2000))
+```
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240926170900540.png" alt="image-20240926170900540" style="zoom:67%;" /> 
 
 
+
+日期对象也有很多方法
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240926171049627.png" alt="image-20240926171049627" style="zoom:67%;" /> 
+
+```
+var date = new Date();
+var year = date.getFullYear();
+var month = date.getMonth();
+var day = date.getDate();
+var week = date.getDay()
+alert("year="+year+"month="+month+"day="+day+"week="+week)
+```
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240926171326558.png" alt="image-20240926171326558" style="zoom:80%;" /> 
+
+#### 正则表达式
+
+RegExp对象表示正则表达式，通常用于检索文本中是否包含指定的字符串
+new RegExp(pattern[,attribute])
+pattern为字符串的形式，规定表达式的匹配规则
+attributes为可选项，可包含属性g,i,m分别表示全局匹配，区分大小写匹配和多行匹配
+
+```
+var pattern = new RegExp([0-9],g);
+声明了一个全局检索文本中是否包含0-9之间任意字符的正则表达式
+```
+
+还有一种简写 :  /pattern/[attribute]
+
+```
+var pattern = /[0-9]/g;
+```
+
+
+
+#### 对象Object
+
+获取对象中的指定属性有两种方法，一种是变量名称后面加 点.属性名 对象.属性
+另一种使用中括号和引号 对象["属性名"]
+
+```
+var result = student.name;
+var result = student["name"];
+```
+
+同样的方法可以改变属性值
+
+```
+student.name="李四"可以直接改值为李四
+```
+
+
+
+### 内置对象
+
+#### Gobal对象
+
+JavaScript中Gobal对象又称为全局对象，其中包含的属性和函数可以用于本地的所有JS对象
+
+属性方法如下表（待补充）
+
+
+
+
+
+#### Math对象
+
+Math对象用于计算，无需初始化创建。可以直接使用关键词Math调用其属性和方法
+常用属性和方法如下（待补充）
+
+
+
+### 宿主对象
+
+宿主对象包括HTML DOM 和 BOM
 
 
 
