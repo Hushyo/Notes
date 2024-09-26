@@ -2262,9 +2262,7 @@ JS基于ES脚本语言规范实现，因此**JS的语法**是：
 | const           | 声明带作用域的常量       |
 | Arrow Functions | 适合写匿名函数的箭头函数 |
 
-<font color=229453>**函数参数支持声明默认值**。</font>
-<font color=229453>JS语句**支持不声明分号结尾**，看个人习惯或者要求带不带分号。</font>
-<font color=229453>JS成员对**大小写敏感**，如 lastName 和 LastName 是两个不同的变量。</font>
+
 <font color=229453>**驼峰式命名**： first-name ×  firstName √</font>
 
 ### 数据类型
@@ -2279,8 +2277,206 @@ JS基于ES脚本语言规范实现，因此**JS的语法**是：
 | 数组         | let cars=["BMW","VOLOV"]                |
 | 函数         | funciton name(参数123){函数体}          |
 
-可以看出
-声明变量时不需要声明变量的数据类型，变量类型跟着它们引用的值走
+利用typeof（变量名）方法可以获得变量存储的数据类型
+
+#### Undefined
+
+所有Undefined类型的输出值都是Undefined
+当输出变量从未声明过或者声明了但是未赋值的变量输出都是Undefined
+
+#### Null
+
+表示变量内容为空，可以用于初始化变量或者清空已经赋值的变量
+
+#### String
+
+字符串，用单双引号包括都行
+如果字符串本身带有单双引号，用不同的引号包括它
+msg="123"  msg='123' msg="1'2'3" msg='1"2"3'
+
+1. 字符串长度
+   字符串长度，在字符串中每一个字符都有固定的位置，从0开始
+   .length可以获得字符串长度，即字符串中字符个数 
+
+   ```
+   var msg = "hello world"
+   alert(msg.length)
+   ```
+
+2. 获取单个字符
+   用方法 **charAt(ind)**可获得指定位置上的字符
+   用 **charCodeAt(ind)** 可以获得它的ASCII码值
+
+3. 连接字符串
+   方法 **concat(str1,str2,···)**可以连接若干字符串，效果跟+相同
+   所以也可以用 + 直接连接
+
+4. 查找字符串
+   方法 **indexOf(str,ind),lastIndexOf(str,ind)** 可以查找字符串中是否包含指定字符串内容
+   str是要查找的字符串内容，ind是从哪儿开始，last是倒着查
+   存在则返回指定内容首个字符的下标，不存在则返回-1
+
+   比如  msg.indexOf(msg1,0) 
+
+5. 查找与替换字符串
+   使用 match() || search() 可以查找匹配正则表达式的字符串内容
+   match(regExp)------------------match的语法格式
+   regExp填入正则表达式 match(/a/g)表示全局查找字母a 小写字母g代表全局查找，返回值为所有符合条件的字符串片段
+   search(regExp)------------------search的语法格式
+   regExp同样插入一个正则表达式，返回值是匹配条件的字符出串的索引值
+
+   在JavaScript中使用replace()方法可以替换匹配正则表达式的字符串
+   replace(regExp,replaceText)-----------Syntax
+   regExp填入正则表达式，replaceText填入想要换成的字符串
+   replace(/a/g,"A") 把所有小写a换成大写A，返回值是替换完毕的新字符串
+
+6. 获取字符串片段
+   **slice() || substring()**截取字符串片段
+   slice用于去掉指定片段
+   substring用于节选指定片段
+
+   **slice(start,end)** [start,end)这个区间的字符串会被删除
+   end忽略则表示从start到尾，如果是负数，则从最后一个位置开始计算，-1表示倒数第一个字符
+   返回去除后的字符串
+
+   **substring(start,end)** [start,end) 获取字符串片段
+   end为非负数时，两者用法完全相同，但是参数存在负数时，substring会将其视为0
+   返回获取到的字符串片段
+
+   ```
+   var msg="happy"
+   var result1 = msg.substring(1,-1)//返回h
+   substring负数会被转换成0  所以是 1,0 从0到1，但是不包括0，结果是h
+   从第1个到第0个
+   var result2 = msg.slice(1,-1)//返回值为app
+   从1到倒数第一个
+   ```
+
+7. 大小写转换
+
+   对于字符串类型变量可以使用 toLowerCase() 和 toUpperCase() 转换大小写字母
+   前者将全部转换为小写，后者全部转换为大写，返回值是转换完成的字符串
+
+   ```
+   var msg = "Happy"
+   msg.toLowerCase() //happy
+   msg.toUpperCase() //HAPPY
+   ```
+
+8. 转义字符
+   <img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20240926123337948.png" alt="image-20240926123337948" style="zoom:50%;" /> 
+
+#### Number
+
+number类型表示数字，可以是32位以内整数或者64位以内浮点数
+也支持科学计数法，八进制和十六进制的表示方式
+
+```
+var x = 9;
+var y = 3.14;
+```
+
+科学计数法
+
+```
+var x1 = 3.14e8  3.14*10^8^
+var x2 = 3.14e-8 3.14*10^-8^
+```
+
+八进制数需要用数字0开头，后面的数字只能0-7（八进制）
+
+```
+var x = 010 相当于十进制的8
+```
+
+ 十六进制数 用数字0和字母x开头，后面字符只能是0-9或A-F，大小写不限
+
+```
+var x =0xA 相当于十进制的10
+```
+
+
+
+浮点数
+定义浮点数必须使用小数点，小数点后面至少跟一位数字
+
+```
+var x = 3.14
+var y = 5.0
+如果小数点前面整数位是0，可以省略0
+var x = .15  等同于 0.15
+```
+
+浮点数可以使用 **toFixed()**方法规定小数点后保留多少位小数
+toFixed(digital)
+
+遵循四舍五入的规律，即使后面是0也会保留
+
+```
+var x=3.1415926
+var result = x.toFixed(2);返回值 3.14
+var x = 0.9999
+result = x.toFixed(2); 返回值 1.00
+```
+
+但是浮点数计算有时会产生误差，建议先扩大成整数，再缩小成小数
+
+```
+var x = 0.7 + 0.1
+alert(x) ;//0.799999999  而不是 0.8
+最好乘十后再除十
+```
+
+
+
+ 特殊Number值
+
+1. infinity
+   表示无穷大的含义，有正负之分，数值超过了JS允许的范围后，会显示Infinity或者-Infinity
+
+   ```
+   var x = 9e3000
+   alert(x) //返回值为 Infinity
+   ```
+
+   两个不同数字比较大时，返回值都是Infinity，认为两个数是相等的
+
+   ```
+   var x1 = 9e3000
+   var x2 = 8e3000
+   alert(x1==x2)//返回值为true
+   ```
+
+   0作为除数不会报错，正数除以0 为Infinity，负数为-Infinity 0%0为NaN
+
+   Infinity不可以与其他数字进行数学计算，返回值是 NaN
+
+2. NaN
+   表示非数字，用于表示数据转换成Number失败的情况，从而无需抛出错误异常
+   NaN由于不是数字，也不能用于数学计算，两个NaN也不相等
+
+   ```
+   var x = "red"
+   var result = Number(x) //返回 NaN
+   ```
+
+   JS提供了判断数据类型是否为数值的方法 isNaN() 返回布尔值
+   当检测的数据无法转化为Number时返回真，否则返回假 用法  isNaN(变量名)
+
+   ```
+   var x1 = "Red"
+   var result = isNaN(x1) //true
+   var x2 = "666"
+   var result = isNaN(x2) //false
+   ```
+
+#### Boolean
+
+可以直接用 true || false 表示
+
+
+
+
 
 #### 箭头函数
 
@@ -2386,6 +2582,60 @@ return `${this.firstName}/${this.lastName}`;
 </script>
 </body>
 ```
+
+
+
+## 对象类型
+
+JS对象分为 本地对象 内置对象 宿主对象 三种
+本地对象 时ECMAScript定义的引用类型
+内置对象时无需实例化直接可以使用的对象，也是特殊的本地对象
+宿主对象指的是用户的机器环境，包括DOM,BOM
+
+### 本地对象
+
+分为四种 数组Array  日期Date 正则表达式RegExp  对象 Object
+
+1. 数组Array
+   用于在单个变量里存储一系列的值
+
+   ```
+   var mobile = new Array();
+   var mobile[0]="apple";
+   var mobile[1]="huawei";
+   var mobile[2]="xiaomi";
+   ```
+
+   数组是从0开始算的，Array类型的特点是无需在一开始就声明数组的具体元素数量，可以随用随加
+   如果一开始就知道有什么元素，可以用逗号隔开直接创建
+
+   ```
+   var mobile= new Array("apple","huawei","xiaomi")
+   或者
+   var mobile=["apple","huawei","xiaomi"]
+   ```
+
+   Array对象包括了length属性，代表数组里元素个数 没有则返回0
+
+   ```
+   var mobile= new Array("apple","huawei","xiaomi")
+   mobile.length //3
+   ```
+
+2. 日期Date
+   有四种初始化方式
+
+   ```
+   
+   ```
+
+   
+
+
+
+
+
+
 
 ### 遍历
 
