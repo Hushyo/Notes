@@ -2128,68 +2128,6 @@ JavaScript有两种使用方式，一种是直接添加在HTML文档中，另一
 
 
 
-
-
-
-
-
-
-
-
-
-
-## 操作符
-
-算数运算符
-
-| Arithmetic Operator | Description |
-| ------------------- | ----------- |
-| +                   | 加          |
-| -                   | 减          |
-| *                   | 乘          |
-| /                   | 除          |
-| %                   | 求余        |
-| ++                  | 自增        |
-| --                  | 自减        |
-
-
-
-| Assignment Operator | Description    |
-| ------------------- | -------------- |
-| =                   | x=y \|x=y      |
-| +=                  | x+=y \| x=x+y  |
-| -=                  | x-=y \| x= x-y |
-| *=                  | x*=y \| x=x*y  |
-| /=                  | x/=y \| x= x/y |
-| %=                  | x%=y \| x=x%y  |
-
-逻辑运算符
-
-| Comparison and Logical Operator | Description        |
-| ------------------------------- | ------------------ |
-| ==                              | 等于               |
-| ===                             | 类型和值全部相等   |
-| ！=                             | 不等于             |
-| ！==                            | 类型和值有一个不等 |
-| > < >= <=                       | 大于小于等于       |
-| ?                               | a>b?a:b            |
-
-？
-
-| Type operator | Descripiton                              |
-| ------------- | ---------------------------------------- |
-| typeof        | 返回变量的类型                           |
-| instanceof    | 如果对象是某个对象类型的实例的话返回true |
-
-### 计算方向
-
-js从左到右按类型合并推导
-let x=16+"A" -> 16A
-let x=16+4+"A" ->20A
-let x="A"+16+4->A164
-如果Number在前面，按number加。直到遇到String
-如果String在前面，后面的全部按照String来直接拼接
-
 ## 语法
 
 JavaScript对大小写严格区分，无论是变量，函数名，运算符或者其他，大小写不同那就是不同的内容
@@ -2665,6 +2603,35 @@ return `${this.firstName}/${this.lastName}`;
 一些值无法通过 toString parseInt parseFloat 转换，例如null undefined等
 此时可以用JS中的强制转换对其转换
 
+1. Boolean() 
+   所有类型都可以用该函数转换成布尔值 
+   Boolean(x) 
+   x是字符串的情况下  x非空时返回true，否则返回false
+   x是数字的情况下，x=0返回false，x为其余整数或者浮点数都返回true
+   x为null或者undefined时，返回false
+   如果x本身就是布尔值，则返回x
+
+2. Number（）函数
+   将任意类型转换成数字
+   如果转换内容为合法的整数或者小数时，会自动调用 parseInt 或者 parseFloat
+   但是与调用他们也有点不同，如果数字后面超过一个小数点或者有其他无效字符，返回NaN而不是截至数字
+   如果转换布尔值 true转成1，false转成0
+   null->0 undefined->NaN
+   如果是其他自定义对象调用这个方法，返回NaN
+
+3. String(value)函数
+   强制转换为字符串类型并且保留字面内容，与toString()相似，与其不同的是它可以将NULL和undefined类型也转成字符串
+
+   ```
+   var x = null;
+   var result = String(x) //"null"
+   var result = x.toString() //发生错误 无返回值
+   ```
+
+   
+
+
+
 
 
 ## 对象类型
@@ -2859,6 +2826,185 @@ Loop
 
    控制台在哪？浏览器摁F12
    ![image-20240622162522061](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622162522061.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 操作符
+
+| 算数运算符 | Description |
+| ---------- | ----------- |
+| +          | 加          |
+| -          | 减          |
+| *          | 乘          |
+| /          | 除          |
+| %          | 求余        |
+| ++         | 自增        |
+| --         | 自减        |
+
+
+
+| Assignment Operator | Description                                |
+| ------------------- | ------------------------------------------ |
+| =                   | 赋值运算符<br />可用于赋值<br />可用于改值 |
+| +=                  | x+=y \| x=x+y                              |
+| -=                  | x-=y \| x= x-y                             |
+| *=                  | x*=y \| x=x*y                              |
+| /=                  | x/=y \| x= x/y                             |
+| %=                  | x%=y \| x=x%y                              |
+
+
+
+| 逻辑运算符 | Description        |
+| ---------- | ------------------ |
+| ==         | 等于               |
+| ===        | 类型和值全部相等   |
+| ！=        | 不等于             |
+| ！==       | 类型和值有一个不等 |
+| > < >= <=  | 大于小于等于       |
+| ?          | a>b?a:b            |
+
+双等号== 判断两个数值是否相等
+如果两个值均为数字类型，则直接判断
+如果存在其他数据类型，则尝试转换成数字类型再比较，转换规则如下
+
+
+
+
+
+
+
+全等于运算符由三个等号===组成，也用于判断两个值是否相同
+但是判断前不进行任何的类型转换，也就是说，两个值必须数据类型相同，数值也相同才返回true
+
+```
+var x = 99
+var y = '99'
+x==y //true
+x===y //false
+```
+
+
+
+| Type operator | Descripiton                              |
+| ------------- | ---------------------------------------- |
+| typeof        | 返回变量的类型                           |
+| instanceof    | 如果对象是某个对象类型的实例的话返回true |
+
+### 计算方向
+
+js从左到右按类型合并推导
+let x=16+"A" -> 16A
+let x=16+4+"A" ->20A
+let x="A"+16+4->A164
+如果Number在前面，按number加。直到遇到String
+如果String在前面，后面的全部按照String来直接拼接
+
+
+
+
+
+## 循环语句
+
+有四种类型的循环语句
+
+- for
+- for-in 循环遍历对象的属性
+- while
+- do-while
+
+for
+
+```
+循环变量在里面声明
+for(var i=0;i<10;i++){
+
+}
+循环变量在外面声明
+var x=0
+for(;x<10;i++){
+
+}
+```
+
+for-in
+用于遍历对象的的所有属性和方法
+每次循环，x都取people的某个属性或者方法名
+
+```
+for(x in object){
+代码块
+}
+
+var people = new Object();
+var msg="";
+people.name="marry";
+people.age="20";
+people.major="JAVA";
+for(x in people){
+msg+=people[x]  对象[属性]用于取值
+}
+alert(msg)//marry20JAVA
+```
+
+while
+条件为真再做
+
+```
+while(条件表达式){
+代码块
+}
+```
+
+do-while
+不管怎么样，先做一次再说
+
+```
+do{
+代码块
+}while(条件表达式)
+```
+
+
+
+
+
+break continue
+break终止一层循环
+continue 终止一次循环
+
+
+
+## JS函数和事件
+
+函数基本语法结构↓
+
+```
+function 函数名(参数列表){
+函数体
+}
+
+function welcome(){
+alert("welcome to js");
+}
+```
+
+函数可以在JS代码的任意位置被调用，也可以在指定事件发生时调用
+
+```
+<button onclick="welcome()">点击调用</button>
+```
 
 
 
