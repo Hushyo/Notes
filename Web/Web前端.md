@@ -2029,19 +2029,6 @@ ECMAScript：核心标准
 DOM:文档对象模型
 BOM:浏览器对象模型
 
-HTML定义了用户互交的事件，当事件发生时可执行指定JS代码
-
-常见的HTML事件：
-
-| Event       | Description        |
-| ----------- | ------------------ |
-| onchange    | HTML元素被修改时   |
-| onclick     | 用户点击HTML元素时 |
-| onmouseover | 鼠标在HTML元素上时 |
-| onmouseout  | 鼠标从元素上移开时 |
-| onkeydown   | 按键按下时         |
-| onload      | 浏览器加载完成时   |
-
 
 
 <font color=229453>举例，将 HTML 代码与 JS 代码耦合</font>
@@ -2416,24 +2403,7 @@ alert(x) ;//0.799999999  而不是 0.8
 
 
 
-#### 箭头函数
 
-类似于lambda表达式 (参数)=>{函数}
-只有一个参数时，()可以省略；没有参数时()不可以省略
-{}表达式单一时，可以省略（只有一句时）
-=> 用的是=> 不像java是 ->
-箭头函数可以直接当作函数类型给变量，而后这个变量变成函数的名字
-
-```html
-<script>
-let toCelsius=
-(f)=>{return(5/9)*(f-32)}
-那么这样已经定义了一个函数了
-此时 toCelsius 便是函数名 像是给匿名函数起了个名字
-它的参数就是匿名函数的参数列表 使用时就是 toCelsius()
-document.getElementById("demo").innerHTML = toCelsius(77);
-</script>
-```
 
 #### 模板字符串
 
@@ -2988,7 +2958,7 @@ continue 终止一次循环
 
 ## JS函数和事件
 
-函数基本语法结构↓
+### 基本语法
 
 ```
 function 函数名(参数列表){
@@ -3004,7 +2974,83 @@ alert("welcome to js");
 
 ```
 <button onclick="welcome()">点击调用</button>
+事件绑定，意为发生这个时间时调用这个函数
 ```
+
+相比Java，JS的函数无需声明返回值类型，如果函数存在返回值，直接return 返回值即可
+
+**常用的系统函数-全局函数**
+eval(String) 
+里面放一个字符串，js会把这个字符串认作JS代码并且尝试执行，把执行的结果返回去，如果没结果，则undefined
+
+```
+ eval("x=20;y=30;z=x*y");
+ console.log(z);
+ 
+ 运行后控制台打印出600
+```
+
+
+
+
+
+
+
+### **匿名函数**
+
+在函数表达式中省略函数名，也可以用一个变量接收这个匿名函数，然后调用时使用变量名()即可（像是给函数起了个名字）
+
+```js
+var fn = function  -此处省略函数名- (num1,num2){
+return num1+num2;
+}
+调用：
+fn(1,2)
+```
+
+匿名函数自调用
+将匿名函数写在小括号内然后对其调用，如果希望某个功能只实现一次可以使用这种方法
+
+```
+(function (num1,num2){
+console.log(num1+num2)
+})(2,3);这个调用的括号紧跟这个函数
+```
+
+
+
+
+
+### 箭头函数
+
+类似于lambda表达式 (参数)=>{函数}
+只有一个参数时，()可以省略；没有参数时()不可以省略
+{}里只有一条语句且语句结果就是返回值时，{ }和return 可以省略
+=> 用的是=> 不像java是 ->
+
+
+
+
+
+以小括号开头，里面可以放置参数，后面跟着箭头，箭头后面跟着函数体
+(参数)=>{函数体}
+
+
+
+箭头函数可以直接赋值给变量，然后可以通过变量名调用这个函数
+
+```html
+<script>
+let toCelsius=
+(f)=>{return(5/9)*(f-32)}
+那么这样已经定义了一个函数了
+此时 toCelsius 便是函数名 像是给匿名函数起了个名字
+它的参数就是匿名函数的参数列表 使用时就是 toCelsius()
+document.getElementById("demo").innerHTML = toCelsius(77);
+</script>
+```
+
+
 
 
 
@@ -3015,7 +3061,7 @@ alert("welcome to js");
 DOM是W3C设计的，与具体开发语言无关的一套接口，接口中定义了操作文档的，内容/结构/样式等等的方法
 当网页被加载时，浏览器会创建页面的文档对象模型
 HTML DOM 模型被结构化为 对象树：
-![image-20240622160156050](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622160156050.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622160156050.png" alt="image-20240622160156050" style="zoom:50%;" /> 
 
 通过这个对象模型，JavaScript获得动态创建HTML的所有力量！
 
@@ -3023,7 +3069,7 @@ HTML DOM 模型被结构化为 对象树：
 - JavaScript能删除和添加HTML元素和属性
 - JavaScript能对页面中所有已有的HTML事件做出反应，而且可以创建新的HTML事件
 
-###  节点
+#### 节点
 
 节点Node，是构成我们网页的最基本的组成部分，网页中的每一个部分都可以称为是一个节点
 比如 html标签、属性、文本、注释、整个文档等 都是一个节点
@@ -3035,7 +3081,7 @@ HTML DOM 模型被结构化为 对象树：
 - 属性节点: 元素的属性
 - 文本节点: HTML标签中的文本内容
 
-![image-20240622160620488](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622160620488.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622160620488.png" alt="image-20240622160620488" style="zoom:50%;" /> 
 
 #### 文档节点
 
@@ -3061,9 +3107,13 @@ HTML中的各种标签都是元素节点（Element），这也是我们最常用
 文本节点（Text）表示的是HTML标签以外的文本内容，任意非HTML的文本都是文本节点，它包括可以字面解释的纯文本内容。文本节点一般是作为元素节点的子节点存在的。获取文本节点时，一般先要获取元素节点，在通过元素节点获取文本节点。
 例如：`元素节点.firstChild;`获取元素节点的第一个子节点，一般为文本节点。
 
-### 操作
+### 查找HTML元素
 
-#### 方法介绍 
+有三种方法查找HTML元素
+
+- 通过ID名查找
+- 通过标签名查找
+- 通过类名查找
 
 | 方法                                      | 介绍                      |
 | ----------------------------------------- | ------------------------- |
@@ -3073,402 +3123,174 @@ HTML中的各种标签都是元素节点（Element），这也是我们最常用
 | document.querySelector(*CSS选择器*)       | 通过CSS选择器选择一个元素 |
 | document.querySelectorAll(*CSS选择器*)    | 通过CSS选择器选择多个元素 |
 
-#### 方法演示
+如果查找不到则返回null，查找到会以对象的形式返回
+通过ID查找到单个元素
 
-**需求描述：创建一个按钮，通过ID获取按钮节点对象**
- 方法 `document.getElementById(id)`
-
-```html
-<body>
-<button id="btn" >我是按钮</button>
-<script>
-   let btn=document.getElementById("btn");
-   通过id获取元素，获取id为btn的元素
-   console.log(btn);并把它打印在控制台上
-</script>
-</body>
+```
+var test = document.getElementById("test");
+var result = test.innerHTML;
+查找 id = "test" 的元素并获取内部文本内容
 ```
 
-![image-20240622162827715](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622162827715.png)
+标签名和类名不像ID一样是唯一的，如果查找不到则返回null，如果查找到会返回数组
 
-**需求描述：创建一个按钮，通过 类名 获取按钮节点对象数组**
-方法 `document.getElementsByClassName(classname)`
+通过标签名查找到一个或者一系列元素
 
-```html
-<script>
-    let btn=document.getElementsByClassName("btn");
-</script>
+```
+var p = document.getElementsByTagName("p");
+
+var result = p[0].innerHTML;
+查找所有段落元素并获取第一个段落的文本内容
 ```
 
-**需求描述：创建一个按钮，通过标签名获取按钮节点对象数组**
-方法 `document.getElementsByTagName(tagname)`
+通过类名查找一个或者多个元素
 
-```html
-<script>
-let bbtn=document.getElementsByTagName("button");
-</script>
+```
+跟 tagname差不多
 ```
 
-<font color = red> 由于类名，标签名可以相同，因此可能会同时存在多个对象，因此上述两种方法返回的都是对象数组</font>
-![image-20240622163319467](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622163319467.png)
-
-这是控制台输出的结果👆 点开可以看数组里都有哪些元素
-
-**那么问题来了！正因为它们返回的都是Nodelist，所以想要调用具体元素时应该是 Nodelist[index]**
-**即想要使用元素内部的属性或者方法时, 如document.getElememtsByTagName(*tagname*)[index].innerText;**
 
 
-真相：它们返回的都不是数组，是类似数组的 NodeList对象，支持索引
 
-两个基于选择器选择元素的方法
-选择器怎么写，它们里面就怎么写
 
-**需求描述：创建一个按钮，通过CSS选择器选择该按钮**
-方法 `document.querySelector(selector)`
 
-```html
-<script>
-let btn=document.querySelector(".btn");
-console.log(btn);
-</script>
+
+### 取改HTML值
+
+创建动态的HTML内容，使用 document.write()方法可以往HTML页面动态输出内容
+
+```
+document.write("hello world") 页面上会输出字符串hello world
+注意 \n在这里是无效的，HTML想换行要输入 <br>
 ```
 
-**需求描述：创建一个无序列表，通过CSS选择器选择该列表的所有li**
-方法  document.querySelectorAll(Selector)
 
-```html
-<ul>
-    <li>a</li>
-    <li>b</li>
-    <li>c</li>
-    <li>d</li>
-</ul>
-<script>
-let btn=document.querySelectorAll("ul li");
-console.log(btn);
-</script>
+
+**改变HTML元素内容**
+
+innerHTML方法，既可以用于获取元素内容，也可以用于改变元素内容
+`var 变量名 = 元素对象.innerHTML`；  获取元素内容
+`元素对象.innerHTML = 新的内容`;   改变元素内容
+
+
+
+**改变HTML元素属性**
+根据元素的属性名 可以获得也可以更改元素内容
+
+`元素对象.属性名 = 新的属性值`
+
+```
+var img = document.getElementById("image");
+img.src="新URL";
 ```
 
-![image-20240623185023365](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240623185023365.png)
+也可以用 setAttribute()方法修改属性
 
-数组支持多种函数式方法
-![image-20240624162215651](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624162215651.png)
+`元素对象.setAttribute(" 属性名 "，"新的属性值")`;
 
-可以点出来
-
-- forEach()遍历  querySelectorAll获取的对象能用这个，我也不知道为什么，但是其他三个不能用
-
-  ```html
-  <span>1</span><span>2</span><span>3</span><span>4</span>
-  <script>
-      let ps=document.querySelectorAll("span");
-      ps.forEach(a=>{
-          a.innerText=a.innerText+1;
-      });
-  </script>
-  ```
-
-  ![image-20240624160543825](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624160543825.png)
-
-- find() 基于指定条件过滤，获取第一个便返回  参数：匿名函数
-
-  ```html
-  console.log(courses.find(a=>a.id==1));
-  ```
-
-  
-
-- map() 基于指定规则映射，返回映射后的新数组
-  map(*callbackFn,[thisArg]*)
-  callbackFn( 必选) 回调函数 
-  thisArg(可选)，执行回调函数时用作this的值
-  该回调函数有三个参数
-  callbackFn ( *element,index,array* )
-
-  1. element 数组中正在处理的元素
-  2. index 该元素的索引
-  3. array 调用了map()的数组本身
-
-  这个回调函数可以用箭头函数，也可以直接定义一个函数
-  但是两者必须有返回值，返回值将作为映射的结果
-
-  ```
-  let numbers=[1,2,3,4];
-  //箭头函数
-  let numbers2=numbers.map((number)=>{return number*2});
-  let numbers2=numbers.map(number=>number*2);
-  两者区别在哪？ 不写{}说明函数体很简单，函数体直接作为返回值；写{}时，不会自动推导返回值，需要手动指明返回值
-  number=>{number*2}这种写法是不正确的，因为没有返回值
-  //函数
-  let numbers2=numbers.map(function(number){return number*2;})
-  ```
-
-  
-
--  fIiter()基于指定条件过滤，返回新数组 里面塞匿名函数,该函数返回值必须是boolean
-
-  ```
-  let numbers=[1,2,3,4];
-  let numbers2=numbers.filter(number=>number%2==0);
-  console.log(numbers2);
-  跟上面的同理，要么不加{}，让他自动推导返回值，要么加{}，手动指明返回值
-  唯独加了{}但不指明返回值的 number=>{number%2==0} 错
-  ```
-
-  
-
-## 获取HTML值
-
-### 方法介绍
-
-| 方法                       | 描述                                                    |
-| -------------------------- | ------------------------------------------------------- |
-| 元素节点.innerText         | 获取HTML元素的 inner Text<br />获取该元素里面的文本     |
-| 元素节点.innerHTML         | 获取HTML元素的 inner HTML<br />获取该元素里面的HTML代码 |
-| 元素节点.属性              | 获取HTML元素的属性值                                    |
-| 元素节点.getAttribute(att) | 获取HTML元素的属性值                                    |
-| 元素节点.style.样式        | 获取HTML元素的行内样式值                                |
-
-###  方法演示
-
-```html
-<div id="box">
-    <h1>welcome</h1>
-    <h2>welcome2</h2>
-    <div>divdiv</div>
-</div>
+```
+var img = document.getElementById("image");
+img.setAttribute("src","新URL")
 ```
 
-1. 元素节点.innerText   仅获取该元素内部的所有文本
-
-   ```html
-   <script>
-      let btn=document.getElementById("box").innerText;
-      console.log(btn);
-   </script>
-   ```
-
-   ![image-20240624134042272](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624134042272.png)
-
-2. 元素节点.innerHTML 获取该元素内部的所有HTML代码
-
-   ```html
-   <script>
-   let btn2=document.getElementById("box").innerHTML;
-       console.log(btn2)
-   </script>
-   ```
-
-   ![image-20240624134027122](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624134027122.png)
-
-3. 元素节点.属性  获取该元素当前的属性
-
-   ```html
-   <a href="">link</a>
-   console.log(document.querySelector("a").href);
-   ```
-
-   ![image-20240624134651341](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624134651341.png)
-
-   还有很长，如果href是空值的话，获取到的是该网页地址栏里的地址
-   如果href非空的话
-
-   ```html
-   <a href="aaa">link</a>
-   console.log(document.querySelector("a").href);
-   ```
-
-   ![image-20240624134806849](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624134806849.png)
-
-   ```html
-   <div id="a" style="color:red;">
-       a
-   </div>
-   let s2=document.getElementById("a").style;
-   console.log(s2);
-   ```
-
-   ![image-20240624134900731](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624134900731.png)
-
-   由于style属性是有很多的，所以说可以更详细地获取
-
-   ```
-   console.log(s2.color);
-   ```
-
-   ![image-20240624135032809](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624135032809.png)
-
-4. 元素节点.getAttribute(*attribute*)
-
-   ```
-   console.log(document.querySelector("a").getAttribute("href"));
-   ```
-
-   ![image-20240624135406283](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624135406283.png)
-
-   看出来 元素节点.属性 跟 getAttribute的区别了吧
-
-   ```html
-   <div id="a" style="color:red;">
-       a
-   </div>
-   console.log(document.getElementById("a").getAttribute("style"));
-   ```
-
-   ![image-20240624135531962](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624135531962.png)
-
-   getAttribute 指明属性里面是什么，它就返回什么
-
-   ```html
-   <div id="a" style="color:red">a</div>
-   console.log(document.getElementById("a").getAttribute("style"));
-   ```
-
-   ![image-20240624135629971](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624135629971.png)
-
-   就好像只返回了所指的属性的 字符串一样
 
 
-   真正的区别在于：元素渲染后一定会有属性，所以 元素.属性一定有值
-   但是 元素不一定显式设置的属性，getAttribute是获取元素显式设置的属性，如果获取的属性没有设置，那么就是null
+**改变HTML元素样式**
+注意样式跟属性不是一回事，样式算是属性style的子项
+所以不能使用setAttribute("样式名"，“样式属性”)这样来更改样式，改样式有别的方法
+`元素对象.style.样式属性 = 新的值`;
 
-## 修改HTML值
+```
+var test = document.getElementById("test");
+test.style.backgroundColor="blue";元素背景改成蓝色
 
-###  方法
+或则
+document.getElementById("test").style.backgroundColor="blue";
+```
 
-| 方法                                         | 描述                                               |
-| -------------------------------------------- | -------------------------------------------------- |
-| 元素节点.innerText = new text                | 改变元素内部的文本                                 |
-| 元素节点.innerHTML= "HTML Code"              | 改变元素内部的HTML代码<br />HTML代码要用""包裹起来 |
-| 元素节点.属性= "new value"                   | 改变元素的属性值                                   |
-| 元素节点.setAttribute(*"attribute","value"*) | 改变元素的属性值                                   |
-| 元素节点.style.样式 = new style              | 改变元素的行内样式值                               |
 
-### 演示
 
-1. 元素节点.innerText = new text
+### **DOM事件**
 
-   ```html
-   <button id="btn" type="button">button</button>
-   <script>
-       document.getElementById("btn").innerText="this is button";
-   </script>
-   ```
+js可以在HTML页面状态发生变化时执行代码,这种状态变化被称为DOM事件
 
-   渲染出来结果不是button 而是this is button
+dom事件也是属性的一种
+js代码可以直接作为属性值写进去，也可以写成js函数然后调用
 
-2. 元素节点.innerHTML= new HTML
+| Event       | Description        |
+| ----------- | ------------------ |
+| onchange    | HTML元素被修改时   |
+| onclick     | 用户点击HTML元素时 |
+| onmouseover | 鼠标在HTML元素上时 |
+| onmouseout  | 鼠标从元素上移开时 |
+| onkeydown   | 按键按下时         |
+| onload      | 浏览器加载完成时   |
 
-   ```html
-   <div id="d">
-       html
-   </div>
-   <script>
-       document.getElementById("d").innerHTML="<a href=\"aaa\">a</a>";
-   </script>
-   ```
+```
+<button onclick="alert("hi")">点击弹出hi</button>
+这个是个错误示范↑正确写法如下
+<button onclick="alert('hi')">点击弹出hi</button>
+由于属性值需要用双引号包括，所以内部需要双引号时，要用单引号代替
+```
 
-   渲染出来不是html 而是 超链接a
 
-3. 元素节点 .属性= new value
 
-   ```html
-   <a id="a" href="">link</a>
-   <script>
-       let a=document.getElementById("a");
-       a.href="aaa";
-       console.log(a.href);
-       console.log(a.getAttribute("href"));
-   </script>
-   ```
+使用JS也可以为HTML页面动态添加和删除HTML元素
+添加HTML元素
+分为两个步骤，先**创建HTML元素**，然后将其追加在一个已经存在的元素中去
+document对象的createElement()方法可以创建新的元素
+创建出来不意味着添加到页面里
 
-   ![image-20240624141808077](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624141808077.png)
+```
+document.createElement("元素标签名");
+document.createElement("p");
+```
 
-   不是空 而是 aaa 由于这也是显式声明的值，所以getAttribute有值
+再**追加HTML元素**，追加进去才算添加到页面里
 
-4. 元素节点.setAttribute(*"attribute","value"*)
+```
+已存在的元素对象.appendChild(将要添加的元素对象);
+var p =document.createElement("p");
+var test = document.getElemEntById("test");
+test.appendChild(p);
+```
 
-   ```
-   let a=document.getElementById("a");
-       a.setAttribute("href","aaa");
-       console.log(a.href);
-       console.log(a.getAttribute("href"));
-   ```
+删除HTML元素
 
-   结果同3
+也需要两个步骤，先获取想要删除的元素对象，然后用removeChild方法将其从父元素中移除
 
-## 结合の例
+```
+如果父元素有ID或者其他方式能获得到，直接获得即可
+var test = document.getElementById("test")//父元素
+var p = document.getElementById("p1");想要删除的元素
+test.removeChild(p);
 
-了解了HTML的触发事件和DOM方法后，便可以实现交互操作
+如果父元素无法通过ID获取，可以通过子元素的parentNode属性获取
+var p = document.getElementById("p1");
+var test = p.parentNode;
+test.removeChild(p)
+```
 
-1. window.alert(value)
-   弹出警告窗口
 
-   ```html
-   <button type="button" onclick="show()">点击弹出警告</button>
-   <script>
-       let show= ()=>{window.alert("警告");}
-   </script>
-   ```
 
-   ![image-20240624145749313](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624145749313.png)
+## BOM
 
-2. 将代码直接写到事件方法里，写在里面的代码 双引号用单引号代替
+浏览器对象模型，使得JS可以与浏览器交互
+BOM常用对象如下
+window：浏览器窗口对象，成员包括所有全局变量，函数和对象
+screen：屏幕对象，常用于获取用户可用屏幕的宽和高
+location：位置对象，获取当前页面的URL地址，还可以重定向
+history：历史记录对象，包含了浏览器的浏览历史记录
+navigator：浏览器对象，通常用于用户浏览器的相关信息
 
-   ```html
-   <button id="btn" type="button" onclick="document.getElementById('btn').innerHTML=6+6">点击弹出警告</button>
-   ```
+JS中window对象表示浏览器窗口，JS中一切全局变量，函数和对象都自动称为window对象的内容
+比如 alert() 完整写法为 window.alert() 通常情况下 window.可以省略不写
 
-   ![image-20240624145959278](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240624145959278.png)
-   点击后变成12
+ 
 
-3. console.log(内容)
-   在控制台输出，上面用的很多了已经
 
-4. 把输入框的字母变大写
 
-   ```html
-   <input type="text" onkeyup="upperCase(this)">
-   <script>
-       let upperCase=(a)=>{a.value=a.value.toUpperCase()};
-   </script>
-   ```
 
-   定义一个方法，方法内部把传入对象的值全部大写，然后输入时把‘输入’ 这个对象当作参数使用，实现按键弹起便转成大写
-
-5. 点击修改输入框变为复选框
-
-   ```html
-   <button onclick="changeInputStyle()"> 点击切换右方输入框</button>
-   <input type="text">
-   <script>
-       let input=document.querySelector("input");
-       let changeInputStyle=()=>{input.type=input.type=="text"?"checkbox":"text";}
-   </script>
-   ```
-
-   ![1](E:/PS/08stu/input-checkbox/1.gif)
-
-6. 只有同意条款才能提交
-
-   ```html
-   <form action="" id="register">
-       <label>
-           <input type="checkbox" onchange="checkAgree(this)">已阅读并同意条款</label><br>
-           <button type="submit" disabled>提交</button>
-       </label>
-   </form>
-   <script>
-       let checkAgree=(input)=>{
-           let submitButton=document.querySelector("#register button[type=submit]");
-           submitButton.disabled=!input.checked;
-       }//disabled是有默认值的,disabled默认true 虽然有值，但是在html里，不管disabled值是什么，都不让点，只能通过js改，在js里使disabled变成false 才让点
-   	 //现在让 disabled=!input.checked  如果checked值为true 那么disabled变成false 然后就可以点了
-   
-   </script>
-   ```
-
-   ![1](E:/PS/08stu/Afterc/1.gif)
 
 # jQuery
 
