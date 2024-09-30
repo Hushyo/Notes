@@ -2,7 +2,7 @@
 
 ## 概述
 
-输入 c  直接tab 快捷注释  仅限于web文档
+idea中输入 c  直接tab 快捷注释  仅限于web文档
 html标签不分大小写，建议全部小写
 
 每个标签，从标签开始到标签结束是一个元素
@@ -3283,10 +3283,62 @@ location：位置对象，获取当前页面的URL地址，还可以重定向
 history：历史记录对象，包含了浏览器的浏览历史记录
 navigator：浏览器对象，通常用于用户浏览器的相关信息
 
+### window
+
 JS中window对象表示浏览器窗口，JS中一切全局变量，函数和对象都自动称为window对象的内容
 比如 alert() 完整写法为 window.alert() 通常情况下 window.可以省略不写
 
- 
+###  Screen
+
+js中window.screen对象可以获取屏幕的宽和高，使用时可以省略前缀，直接写作screen
+screen常用属性如下
+availWidth:表示屏幕可用宽度 单位为px
+availHeight:表示屏幕可用高度，单位px
+
+### Location
+
+window.location对象可以获取当前页面的URL或者重新定向浏览器，也可以忽略window前缀直接写作location
+
+location的href属性可以用于重新定向
+
+```
+location.href="http://bilibili.com";
+```
+
+
+
+### History
+
+window.history是历史记录对象，包含浏览器的历史记录
+实现浏览器上返回和前进按钮的相同功能，同样可以省略window前缀直接写为history
+
+| 方法            | 说明                                                         |
+| --------------- | ------------------------------------------------------------ |
+| forward()       | 加载history列表中下一个URL                                   |
+| back()          | 加载history列表中上一个URL                                   |
+| go(number\|URL) | 加载列表中某个页面 URL指定要访问的URL<br />number指定URL在history URL列表中的位置 |
+
+### Navigator
+
+window.navigator对象可获取用户浏览器一系列信息，如浏览器名称版本号等等
+
+可简写为 navigator
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5526,23 +5578,28 @@ Controller
 
 - 无依赖，单向依赖
 
-![image-20240629140444240](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140444240.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140444240.png" alt="image-20240629140444240" style="zoom:25%;" /> 
 
 
 
 **反例**
 
-![image-20240629140506826](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140506826.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140506826.png" alt="image-20240629140506826" style="zoom:50%;" /> 
 
-![image-20240629140514479](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140514479.png)
-
-
-
-![image-20240629140522050](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140522050.png)
-
-![image-20240629140531219](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140531219.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140514479.png" alt="image-20240629140514479" style="zoom:50%;" /> 
 
 
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140522050.png" alt="image-20240629140522050" style="zoom:50%;" /> 
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240629140531219.png" alt="image-20240629140531219" style="zoom:50%;" /> 
+
+# MVVM模式
+
+MVVM: Model View ViewModel
+Model 数据部分
+View 视图部分
+ViewModel 用于连接视图与数据模型，负责监听View或者Model的改变
 
 
 
