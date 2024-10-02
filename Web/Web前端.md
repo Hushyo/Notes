@@ -391,8 +391,9 @@ HTML5只保留了内联框架标签`<iframe>`
 
 1.  action 属性
    代表表单将要传到哪里，规定表单提交数据的服务器地址
-   值为URL地址
-
+   值为URL地址，表单提交后会带着表单跳转到action里URL地址
+   如果给form绑定一个事件，事件返回值是false时便不会跳转
+   
 2. method 属性
    规定发送表单的HTTP方式，是get请求还是post请求啊
 
@@ -2005,6 +2006,12 @@ body {
 
 这样就平均分了
 
+
+
+
+
+
+
 # JavaScript
 
 使用JS最好先写上这个
@@ -2013,7 +2020,7 @@ body {
 <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 ```
 
-## Introduction
+## 须知
 
 **JavaScript**是一种基于**对象和事件驱动**并具有相对安全性的**客户端**脚本语言，浏览器可以直接编译
 举例：数字日历，跑马灯
@@ -2032,9 +2039,9 @@ BOM:浏览器对象模型
 
 
 <font color=229453>举例，将 HTML 代码与 JS 代码耦合</font>
-![image-20240622144755990](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622144755990.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240622144755990.png" alt="image-20240622144755990" style="zoom:50%;" /> 
 
-## 如何使用？
+### 如何使用？
 
 JavaScript有两种使用方式，一种是直接添加在HTML文档中，另一种是写到外部JavaScript文件，再在HTML中引用该文件
 但是 JS代码必须放在标签`<script> </script>`里面
@@ -2115,7 +2122,7 @@ JavaScript有两种使用方式，一种是直接添加在HTML文档中，另一
 
 
 
-## 语法
+### 规范
 
 JavaScript对大小写严格区分，无论是变量，函数名，运算符或者其他，大小写不同那就是不同的内容
 
@@ -2179,16 +2186,7 @@ JavaScript变量命名不能和现有关键字和保留字重复
 
 
 
-JS基于ES脚本语言规范实现，因此**JS的语法**是：
 
-| Syntax          | Description              |
-| --------------- | ------------------------ |
-| let             | 声明带作用域的变量       |
-| const           | 声明带作用域的常量       |
-| Arrow Functions | 适合写匿名函数的箭头函数 |
-
-
-<font color=229453>**驼峰式命名**： first-name ×  firstName √</font>
 
 ### 数据类型
 
@@ -2203,6 +2201,14 @@ JS基于ES脚本语言规范实现，因此**JS的语法**是：
 | 函数         | funciton name(参数123){函数体}          |
 
 利用typeof（变量名）方法可以获得变量存储的数据类型
+
+```
+var x = "hello";
+var y = typeof(x);
+var y = typeof x;不加括号也行
+```
+
+
 
 #### Undefined
 
@@ -2600,7 +2606,148 @@ return `${this.firstName}/${this.lastName}`;
 
    
 
+### 操作符
 
+| 算数运算符 | Description |
+| ---------- | ----------- |
+| +          | 加          |
+| -          | 减          |
+| *          | 乘          |
+| /          | 除          |
+| %          | 求余        |
+| ++         | 自增        |
+| --         | 自减        |
+
+
+
+| Assignment Operator | Description                                |
+| ------------------- | ------------------------------------------ |
+| =                   | 赋值运算符<br />可用于赋值<br />可用于改值 |
+| +=                  | x+=y \| x=x+y                              |
+| -=                  | x-=y \| x= x-y                             |
+| *=                  | x*=y \| x=x*y                              |
+| /=                  | x/=y \| x= x/y                             |
+| %=                  | x%=y \| x=x%y                              |
+
+
+
+| 逻辑运算符 | Description        |
+| ---------- | ------------------ |
+| ==         | 等于               |
+| ===        | 类型和值全部相等   |
+| ！=        | 不等于             |
+| ！==       | 类型和值有一个不等 |
+| > < >= <=  | 大于小于等于       |
+| ?          | a>b?a:b            |
+
+双等号== 判断两个数值是否相等
+如果两个值均为数字类型，则直接判断
+如果存在其他数据类型，则尝试转换成数字类型再比较，转换规则如下
+
+
+
+
+
+
+
+全等于运算符由三个等号===组成，也用于判断两个值是否相同
+但是判断前不进行任何的类型转换，也就是说，两个值必须数据类型相同，数值也相同才返回true
+
+```
+var x = 99
+var y = '99'
+x==y //true
+x===y //false
+```
+
+
+
+| Type operator | Descripiton                              |
+| ------------- | ---------------------------------------- |
+| typeof        | 返回变量的类型                           |
+| instanceof    | 如果对象是某个对象类型的实例的话返回true |
+
+计算方向
+
+js从左到右按类型合并推导
+let x=16+"A" -> 16A
+let x=16+4+"A" ->20A
+let x="A"+16+4->A164
+如果Number在前面，按number加。直到遇到String
+如果String在前面，后面的全部按照String来直接拼接
+
+
+
+
+
+### 循环语句
+
+有四种类型的循环语句
+
+- for
+- for-in 循环遍历对象的属性
+- while
+- do-while
+
+for
+
+```
+循环变量在里面声明
+for(var i=0;i<10;i++){
+
+}
+循环变量在外面声明
+var x=0
+for(;x<10;i++){
+
+}
+```
+
+for-in
+用于遍历对象的的所有属性和方法
+每次循环，x都取people的某个属性或者方法名
+
+```
+for(x in object){
+代码块
+}
+
+var people = new Object();
+var msg="";
+people.name="marry";
+people.age="20";
+people.major="JAVA";
+for(x in people){
+msg+=people[x]  对象[属性]用于取值
+}
+alert(msg)//marry20JAVA
+```
+
+while
+条件为真再做
+
+```
+while(条件表达式){
+代码块
+}
+```
+
+do-while
+不管怎么样，先做一次再说
+
+```
+do{
+代码块
+}while(条件表达式)
+```
+
+
+
+
+
+break continue
+break终止一层循环
+continue 终止一次循环
 
 
 
@@ -2805,160 +2952,11 @@ Loop
 
 
 
-
-
-
-
-
-
-## 操作符
-
-| 算数运算符 | Description |
-| ---------- | ----------- |
-| +          | 加          |
-| -          | 减          |
-| *          | 乘          |
-| /          | 除          |
-| %          | 求余        |
-| ++         | 自增        |
-| --         | 自减        |
-
-
-
-| Assignment Operator | Description                                |
-| ------------------- | ------------------------------------------ |
-| =                   | 赋值运算符<br />可用于赋值<br />可用于改值 |
-| +=                  | x+=y \| x=x+y                              |
-| -=                  | x-=y \| x= x-y                             |
-| *=                  | x*=y \| x=x*y                              |
-| /=                  | x/=y \| x= x/y                             |
-| %=                  | x%=y \| x=x%y                              |
-
-
-
-| 逻辑运算符 | Description        |
-| ---------- | ------------------ |
-| ==         | 等于               |
-| ===        | 类型和值全部相等   |
-| ！=        | 不等于             |
-| ！==       | 类型和值有一个不等 |
-| > < >= <=  | 大于小于等于       |
-| ?          | a>b?a:b            |
-
-双等号== 判断两个数值是否相等
-如果两个值均为数字类型，则直接判断
-如果存在其他数据类型，则尝试转换成数字类型再比较，转换规则如下
-
-
-
-
-
-
-
-全等于运算符由三个等号===组成，也用于判断两个值是否相同
-但是判断前不进行任何的类型转换，也就是说，两个值必须数据类型相同，数值也相同才返回true
-
-```
-var x = 99
-var y = '99'
-x==y //true
-x===y //false
-```
-
-
-
-| Type operator | Descripiton                              |
-| ------------- | ---------------------------------------- |
-| typeof        | 返回变量的类型                           |
-| instanceof    | 如果对象是某个对象类型的实例的话返回true |
-
-### 计算方向
-
-js从左到右按类型合并推导
-let x=16+"A" -> 16A
-let x=16+4+"A" ->20A
-let x="A"+16+4->A164
-如果Number在前面，按number加。直到遇到String
-如果String在前面，后面的全部按照String来直接拼接
-
-
-
-
-
-## 循环语句
-
-有四种类型的循环语句
-
-- for
-- for-in 循环遍历对象的属性
-- while
-- do-while
-
-for
-
-```
-循环变量在里面声明
-for(var i=0;i<10;i++){
-
-}
-循环变量在外面声明
-var x=0
-for(;x<10;i++){
-
-}
-```
-
-for-in
-用于遍历对象的的所有属性和方法
-每次循环，x都取people的某个属性或者方法名
-
-```
-for(x in object){
-代码块
-}
-
-var people = new Object();
-var msg="";
-people.name="marry";
-people.age="20";
-people.major="JAVA";
-for(x in people){
-msg+=people[x]  对象[属性]用于取值
-}
-alert(msg)//marry20JAVA
-```
-
-while
-条件为真再做
-
-```
-while(条件表达式){
-代码块
-}
-```
-
-do-while
-不管怎么样，先做一次再说
-
-```
-do{
-代码块
-}while(条件表达式)
-```
-
-
-
-
-
-break continue
-break终止一层循环
-continue 终止一次循环
-
-
-
 ## JS函数和事件
 
-### 基本语法
+### 函数
+
+#### 基本语法
 
 ```
 function 函数名(参数列表){
@@ -2996,7 +2994,7 @@ eval(String)
 
 
 
-### **匿名函数**
+#### **匿名函数**
 
 在函数表达式中省略函数名，也可以用一个变量接收这个匿名函数，然后调用时使用变量名()即可（像是给函数起了个名字）
 
@@ -3021,14 +3019,12 @@ console.log(num1+num2)
 
 
 
-### 箭头函数
+#### 箭头函数
 
 类似于lambda表达式 (参数)=>{函数}
 只有一个参数时，()可以省略；没有参数时()不可以省略
 {}里只有一条语句且语句结果就是返回值时，{ }和return 可以省略
 => 用的是=> 不像java是 ->
-
-
 
 
 
@@ -3050,9 +3046,148 @@ document.getElementById("demo").innerHTML = toCelsius(77);
 </script>
 ```
 
+### 事件
+
+事件编程：让用户不仅能浏览页面中的内容，而且还可以和页面元素进行交互
+事件类型：鼠标事件，键盘事件，HTML事件，突变事件；
+鼠标事件：鼠标单击
+键盘事件：按下或者释放按键
+突变事件：文档底层元素发生改变时出发的事件
+
+#### 事件句柄
+
+基本语法
+\<tag 事件句柄 = "javascript代码" ...> \</tag>
+
+事件句柄
+事件句柄是事件发生要做的操作，也称为事件属性
+\<body onload = "show() " > ... \</body>
+其中 onload便是事件句柄，show() 可以叫做事件处理函数 load叫事件名称
+
+事件句柄一览表
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241002223613896.png" alt="image-20241002223613896" style="zoom: 80%;" /> 
 
 
 
+
+
+
+
+
+
+#### 事件处理
+
+
+
+当一个事件发生时，如果需要截获并处理事件，只需要定义事件得到事件句柄所关联的处理代码，有三种方式
+1.静态指定 
+<tag 事件句柄1="处理程序" [事件句柄2="处理程序"] >
+一个元素可以绑定多个事件
+
+```
+<input type="button" value="通过函数输出信息" onclick="testInfo('单击按钮，调用函数输出信息')">
+```
+
+2.动态指定
+<事件主角-对象>.<事件句柄>=<事件处理程序>
+
+```
+<body>
+    <form name="myform" method="post" action="" >
+       <input id="input" type="button" name="mybutton" value="提交" > 
+    </form>
+     <script>
+      function clickHandler() {alert("即将提交表单！"); return true;}
+      //动态分配一个事件句柄
+      document.getElementById('input').onclick=function(){return clickHandler();}
+      //myform.mybutton.onclick(); 对象.句柄=程序
+      </script>
+     </body>
+```
+
+3.特定对象特定事件指定
+\<script for="对象" event = "事件">处理代码\</script>
+
+```
+<body>
+    <h4>给特定对象指定特定事件处理程序</h4>
+    <script for="window" event="onload">指定window对象触发事件 onload 时 执行其中代码块
+        alert("网页读取完成，欢迎光临！");
+    </script>
+    <body>
+
+```
+
+
+
+#### 处理程序
+
+事件处理程序的返回值
+在JavaScript中通常事件处理程序不需要有返回值，这时浏览器会按默认方式进行处理
+但是很多情况下需要使用返回值，来判断事件处理程序是否正确进行处理
+返回值类型：boolean类型。浏览器根据返回值的类型决定下一步如何操作
+当返回值为true，进行默认操作； 当返回值为 false，阻止浏览器的下一步操作
+
+基本语法：事件句柄=" return 函数名（参数) ;"
+
+举例↓
+
+```
+<script language="javascript">
+        function showName() {
+            if (document.form1.name1.value == "") {
+                alert("没有输入内容！");
+                return false;
+            } else {
+                alert("欢迎你!" + document.form1.name1.value);
+                return true;
+            }
+        }
+    </script>
+    
+<body>
+    <h4>事件处理程序返回值的应用</h4>
+    <!-- onsubmit事件处理函数返回真值就执行action指定的网页 -->
+    <form name="form1" action="simple.html" onsubmit="return showName();">
+        姓名：<input type="text" name="name1" />
+        <input type="submit" value="提交" />
+    </form>
+</body>
+
+正常来收，点击表单提交后，正常来说会跳转到action里的URL页面，但是这里给form绑定了事件，当事件处理程序返回false时，便不会跳转
+```
+
+
+
+#### 表单事件
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241002225115665.png" alt="image-20241002225115665" style="zoom: 67%;" /> 
+
+
+
+获得/失去焦点事件
+
+什么是焦点？鼠标点击便是焦点
+如果鼠标点击了A，那么A获得焦点。
+只要鼠标没有再次点击别的地方，那么焦点一直属于A。
+
+```
+<form action="http://bilibili.com">
+    <input type="button" value="获得/失去焦点" onfocus="getFocus()" onblur="loseFocus()">
+</form>
+
+function getFocus(){
+    document.body.style.backgroundColor="green";
+}
+function loseFocus(){
+    document.body.style.backgroundColor="red";
+}
+```
+
+
+
+提交及重置事件
 
 ## DOM
 
@@ -3272,6 +3407,24 @@ test.removeChild(p)
 ```
 
 
+
+
+
+DOM事件流
+事件流分为事件捕获和事件冒泡
+事件捕获由网景公司的团队提出，指的是事件流传播的顺序应该是从DOM树的根节点一直到发生事件的节点；
+事件冒泡由微软公司的团队提出，指的是事件流传播的顺序应该是从发生事件的节点到DOM树的根节点；
+
+W3C对网景公司和微软公司提出的方案进行了中和处理，将DOM事件流分为3个阶段
+事件捕获阶段：事件从document节点自上而下向目标节点传播的阶段。
+事件目标阶段：事件流到达目标节点后，运行相应的事件驱动程序的阶段。
+事件冒泡阶段：事件从目标节点自下而上向document节点传播的阶段。
+
+当事件发生后，浏览器首先进行事件捕获，但不会对事件进行处理，然后进入事件目标阶段，运行目标节点的事件驱动程序，最后进入事件冒泡阶段，逐级对事件进行处理。
+
+下面以一个包含div元素的页面为例，展示事件流的具体过程
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241002211910582.png" alt="image-20241002211910582" style="zoom:50%;" />  
 
 ## BOM
 
