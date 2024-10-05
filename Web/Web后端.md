@@ -61,12 +61,16 @@ Slf4j(Simple logging facade for Java)
 |  all  | 打开所有日志                                                 |
 
 springboot框架已包含slf4j接口及Logback实现依赖，无需显式声明引入，即无需声明依赖
+
 我们可以在application.yml里声明日志配置
 
-![image-20240918172217331](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240918172217331.png)
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20240918172217331.png" alt="image-20240918172217331" style="zoom:67%;" /> 
 
 logging:level，声明不同包的路径日志级别，root为最顶层节点，声明root全局warn以上级别输出
 下面的那个则声明 com.example下的日志输出等级为debug，输出日志时只能输出debug及更高级的日志
+
+在application.yml里 logging用来配置日志系统，可以按上面那样写
+也可以一项项单独写 比如 logging.level.root: warn , logging.pattern.console: ··· 
 
 
 
@@ -86,3 +90,278 @@ Idea默认已包含lombok插件，不需要额外引入
 |      @Builder       | 添加Builder模式<br />但是必须同时添加@NoArgsConstructor/@AllArgsConstructor |
 |                     |                                                              |
 
+## JDBC
+
+JDBC优点不写，缺点 SQL语句以硬编码形式写于代码中，不利于维护移植，原生JDBC同步阻塞
+
+ORM 对象关系映射
+一种为了解决面向对象与关系数据库不匹配现象的技术
+无需关心底层数据库，只需要面向对象实现细节（不管是用哪种数据库都可以）
+
+### **Spring-data-jdbc**
+
+Spring-data是 Spring的子项目，看名字就知道，而 jdbc又是Spring-data的一个子项目。
+提供了统一的编程模型/接口，简化了数据访问层的开发工作
+包括通用的CRUD操作/查询方法/事物管理和数据访问抽象层等
+
+idea里添加database视图并添加数据库可以让项目支持对数据源操作的自动提示
+具体怎么添加数据源，看之前的笔记
+如果没有自动提示，在编写SQL代码的时候按alt+enter打开语法提示 然后推荐选择MySQL语法
+
+
+
+**数据库初始化**
+
+基于SpringBoot自动配置策略，引入持久化框架时，自动读取配置中的数据源配置
+如果没有配置数据源则抛出异常无法启动				配置中添加自动创建数据库参数
+在Application中 spring下声明 sql.init.mode: always 
+每次启动spring时就会加载一下 resources下的schema.sql文件来初始化数据库
+不声明则不会自动执行sql脚本
+
+为什么加载这个？因为这是默认配置，如果你的sql文件不叫这个，那就加载不动了，所以要按规范命名配置文件
+
+sql文件下，放的是初始化数据库的代码
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241003160243030.png" alt="image-20241003160243030" style="zoom:50%;" /> 
+
+用反引号 `` 包括表名，防止表名与关键字冲突
+
+最好用 if not exists 因为每次启动都要执行一遍脚本，但我们只需要在第一次执行的时候创建表
+如果表存在就不创建了
+但是这样也存在一些问题，我们在旧表里添加新字段，但是执行脚本时由于旧表存在，并不会更新旧表
+脚本进支持判断是否需要创建数据表，如果数据表存在而想改变/添加字段时，只能我们手动更改数据表
+
+对于表中的外键，我们不直接声明外键，而是在外键上建立索引
+因为互联网经常跨表，跨库，外键约束不了，于是干脆不约束了
+
+
+
+
+
+### 开发规范
+
+OR Mapping
+
+一个类映射为一张数据表
+类的一个属性映射为数据表中的一个字段（键）
+类的一个对象映射为数据表中的一条记录（一个元组）
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241003154830460.png" alt="image-20241003154830460" style="zoom:67%;" /> 
+
+
+
+**DO**
+与数据库表结构一一对应的类
+一个DO就可以理解为一张Mysql里的表，不过这个表是实体的一个Java类，一个DO的对象就表示mysql里的一条数据。
+但是DO类的包不允许名字是do，所以我们用dox作为包名来放置DO类
+课程中的各个实体entity类其实就是DO类
+
+
+
+**DAO**
+
+
+
+**DTO**
+
+数据传输对象，通过Service层按需求组织DO数据封装到DTO对象
+DTO 简单理解就是接收前端传递过来的数据的，
+比如前端给你传递一个POST请求，你想用对象进行接收，此时我们就会使用DTO对象来接收。
+
+**VO**
+
+显示层对象，向视图传输的对象
+VO简单来说，就是我们返回给前端数据用的对象就是VO
+比如你从数据库查了一些表的部分信息，封装之后，要返回给前端，此时你就你可以用一个VO来进行封装，返回给前端。
+
+
+
+所有用于封装数据的，仅包含属性不包含处理逻辑（业务）的类统称为POJO类（贫血模式）
+POJO类必须包含
+
+- 无参构造函数。各种框架使用反射构造对象
+- 所有属性不声明初始值。在操作时显示赋值，避免忘记初始值
+- 属性必须声明为 private或者protected
+- 基本数据类型属性 声明为引用属性 int->Integer 避免默认值 默认是0跟不存在是不同的意义
+- 严格按规约声明 getter/setter方法
+- 声明为非 final 类
+- 多使用组合 少使用继承
+
+**映射规则**
+数据库中 所有库/表/字段名全部小写，单词间用下划线连接
+java中 驼峰式命名
+Spring自动按照约定进行映射，所以自己写的时候要按规矩写
+
+user_name->userName
+create_time->createTime
+就这么映射，反向也是这个规则
+
+
+
+### 实例
+
+来看一个DO类吧
+
+```
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class User {
+    @Id
+    @CreatedBy
+    private String id;
+    private String name;
+    @ReadOnlyProperty
+    private LocalDateTime createTime;
+    @ReadOnlyProperty
+    private LocalDateTime updateTime;
+}
+```
+
+主要关心类里面的注解
+注解可以叠加，但是只作用于下面第一个出现的属性
+像是@Id,@CreateBy它俩只作用于第一个出现的 id属性
+
+@Id 声明属性为主键
+@CreateBy 声明属性为审计字段，一般用于填充用户信息，这个过程不需要我们来完成，但我们需要告诉jdbc从哪儿获得用户信息 
+@ReadOnlyProperty 声明属性为只读属性，也就是我们读数据的时候考虑这个属性，在进行其他操作时比如持久化（如保存）时会忽略这个属性
+
+再看雪花算法
+
+```
+@Configuration
+@EnableJdbcAuditing
+public class SnowflakeGenerator {
+    @Bean
+    AuditorAware<String> auditorAware() {
+        Snowflake s = new Snowflake();
+        return () -> Optional.of(String.valueOf(s.nextId()));
+    }
+```
+
+@EnableJdbcAuditing 注解用于启用 Spring Data JDBC 的审计功能
+当启用后，它会自动填充使用 `@CreatedBy`、`@CreatedDate`、`@LastModifiedBy` 和 `@LastModifiedDate` 注解的字段
+
+@Configuration注解标记一个类作为配置源，替代传统的 XML 配置文件
+
+ @Bean注解 它用于指示方法应该返回一个对象，该对象应该被注册为 Spring 应用上下文中的 Bean，这样 Spring 才能识别并使用它，给上文的@CreateBy注解的属性完成自动填充
+
+
+
+为什么数据库中id要用19位字符接收？为什么不用整形？
+在MySQL中，bigint/char类型主键没有性能差异，但是在前端中String可以避免JS无法处理19位整数的精度丢失问题
+因此使用19位字符作为主键id
+
+
+
+### CrudRepository
+
+CrudRepository<T,ID> 接口提供了针对DO类的基本CRUD操作（create read update delete)
+T操作的DO类型，ID主键类型，提供
+
+T save(S entity) 方法 默认保存全部属性值，值为null时也会保存到数据库，因此可能覆盖数据库设置的默认值
+如果数据库中存在同样的对象但是属性值不同，新的属性值会覆盖旧的属性值，也就是完成了update操作
+
+还有其他方法，先不写
+
+
+
+使用：
+创建一个名为 repository的包，专门放置各种组件
+如对User处理的组件就创建一个名为 UserRepository 的接口，这个接口继承以上这个CRUD接口
+`CrudRepository` 提供了一组标准的 CRUD 操作，而 `UserRepository` 通过继承它，自动获得了这些操作的实现
+
+同时利用@Repository注解，使得Spring 应用启动时，它会扫描带有 `@Repository` 注解的类，并自动将这些类注册为 Spring 应用上下文中的 Bean， Spring 会管理这些类的生命周期，并且可以通过依赖注入的方式在其他组件中使用它们。
+你的服务层中，你可以注入 `UserRepository` 并使用它
+
+```java
+@Autowired
+private UserRepository userRepository
+```
+
+```
+@Repository
+public interface UserRepository extends CrudRepository<User,String> {
+//UserRepository 作为一个接口，定义了对 User 实体进行 CRUD 操作的方法
+}
+```
+
+如果此时调用save方法，它会按照CRUD里提供的方法进行操作
+
+@Query注解
+用于定义一个自定义的数据库查询方法
+同时需要 声明SQL查询语句
+:parameter 在声明的SQL语句内作为占位符
+
+方法名随意，但是最好符合规范
+
+```
+    @Query("""
+            select * from address a 
+            where a.user_id =:userId
+        """)
+    List<Address> findByUserId(String userId);
+
+```
+
+在例子中，查询将返回一个 `Address` 对象的列表，每个对象都是根据查询结果集中的一行数据组装而成的
+占位符那里，支持使用SpEL表达式 :#{#user.id} :声明占位符 #{声明这是EL表达式}
+
+
+
+**更新Update**
+
+Spring -data-jdbc的更新操作同样基于save()方法，如果主键不存在则插入操作，如果存在则覆盖，也算是更新了
+save方法按上面说的，会保存全部属性，对象的空值属性也会更新。因此更新局部属性时必须先查出全部属性，合并再更新
+非常的麻烦，先查，再跟现在的对象合并，能不麻烦吗？现在有新的注解@Modifying
+自动完成合并更新
+
+```
+@Modifying
+@Query("SQL语句")
+void update....
+```
+
+**删除delete**
+删除数据 delete from 表名 where 条件
+这个语句同样需要用到@Modifying注解
+
+当你使用 `@Query` 注解执行自定义查询时，如果查询是修改数据的操作（如 `INSERT`、`UPDATE`、`DELETE`）
+需要使用 `@Modifying` 注解来标记这个方法，不然报错，违反完整性，不给执行
+
+普通的查询不需要这个注解，一旦涉及到数据更改，就要用这个注解
+
+
+
+### 测试
+
+在测试包test里创建对应的测试类，以User为例
+
+```
+@SpringBootTest
+@Slf4j
+class UserRepositoryTest {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Test
+    void save(){
+        var user = User.builder()
+                .name("test2").build();
+        userRepository.save(user);
+    }
+}
+```
+
+@SpringBootTest注解用于创建Spring容器，没容器怎么用Spring
+@Slf4j 创建日志
+
+测试类命名规范：将要测试的类名+Test
+
+@Autowired 注解用于实现依赖注入
+
+UserRepository接口我们用@Repository把他放入了Spring容器里，现在通过这个注解把他注入
+@Autowired会自动引入UserRepository类型的Bean，我们声明这个类型的变量，这个Bean就注入到这个变量里了
+@Test用于标记一个方法为测试方法，然后写想测试的方法就行了
+上面@Test表记 void save()方法为测试方法，要注意测试方法名是随意的，而且不需要有参数列表，我们只需要在测试方法里面通过注入进来的组件调用我们想要测试的方法就可以了

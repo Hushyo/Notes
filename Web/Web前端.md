@@ -3189,7 +3189,122 @@ function loseFocus(){
 
 提交及重置事件
 
+```
+    <script  type="text/javascript">
+        function submitTest() {
+            var msg ="表单数据的获取：\n";
+            var username = document.getElementById("input1").value;
+            msg+="用户名:";
+            msg+=username;
+            var psw = document.getElementById("input2").value;
+            msg+="，\n密码:是";
+            msg+=psw;
+            alert(msg);
+            return false;//获取但是不提交表单
+        }
+        function resetTest() {alert("将数据清空");}
+    </script>
+    
+    <body>
+        <form onsubmit="return submitTest();"  onreset="resetTest()"> 
+            <fieldset>
+                <legend>表单数据提交</legend>
+                <br><label>用户名：</label><input type="text" id="input1">
+                <br><label>密&nbsp;码：</label><input type="password" id="input2">
+                <br><input type="submit" value="提交">
+                <input type="reset" value="重置">
+            </fieldset>
+        </form>
+    </body>
+```
+
+
+
+改变以及选择事件
+
+```
+    <script language="javascript">
+        function changeImage() {            
+            var a = document.getElementById("game").selectedIndex;
+            //获取下拉框中选择项
+            document.getElementById("show").src = document.getElementById("game").options[a].value;
+			//将图片更改为对应选择项
+        }
+    </script>
+        <form>
+        <select id="game" onChange="changeImage()" >
+            <option value="pic4.jpg">--请选择--</option>
+            <option value="pic0.jpg">平板电视</option>
+            <option value="pic1.jpg">笔记本电脑</option>
+            <option value="pic2.jpg">单反相机</option>
+            <option value="pic3.jpg">智能手机</option>
+        </select>
+    </form>
+```
+
+
+
+#### 鼠标事件
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241003145930647.png" alt="image-20241003145930647" style="zoom:67%;" /> 
+
+
+
+鼠标单击事件
+
+```
+    <script type="text/javascript">
+        function $(id) { return document.getElementById(id); }
+        function copyText() { $("target").value = $("source").value; }
+        //$("target")突然出现的？上面定义的函数在这儿被调用了
+    </script>
+    <form method="post" action="">
+        来源文本框：<input type="text" id="source" value="">
+        <br>目标文本框：<input type="text" id="target" readonly>
+        <br><input type="button" value="复制文本框内容" onclick="copyText();">
+    </form>
+通过ID获取页面元素的通用函数 
+function $(id){ return document.getElementById(id); }
+```
+
+鼠标移动事件
+
+```
+function mouseOver(){
+    document.getElementById("i1").src="resource/img/stq.png";
+}
+function mouseOut(){
+    document.getElementById("i1").src="resource/img/Varolant.jpg";
+}
+<body>
+    <img id="i1"src="#" alt="" onmouseover="mouseOver()" onmouseout="mouseOut()">
+</body>
+网页里有个图片，鼠标移动上去是一个图，移出去是另一个图
+```
+
+#### 键盘事件
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241003151024290.png" alt="image-20241003151024290" style="zoom:67%;" />  
+
+通过 window的event对象的keyCode属性来获取按键代码的值
+回车：13，
+0～9：48～57;
+Aa～Zz: 65～90;  
+对应代码值是ASCII码值
+event对象的key属性则是直接返回按下按键的字符
+按 A 时 key->"A"  keyCode->65
+
+等待学习
+
+
+
+
+
 ## DOM
+
+
+
+
 
 ### 概述
 
