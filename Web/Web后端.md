@@ -147,6 +147,10 @@ OR Mapping
 
 <img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241003154830460.png" alt="image-20241003154830460" style="zoom:67%;" /> 
 
+映射发生在哪里下面一点一点揭晓，现在只需要映射规则，只要名字对，不管什么类型都能映射进去
+
+
+
 
 
 **DO**
@@ -222,11 +226,11 @@ public class User {
 注解可以叠加，但是只作用于下面第一个出现的属性
 像是@Id,@CreateBy它俩只作用于第一个出现的 id属性
 
-@Id 声明属性为主键
-@CreateBy 声明属性为审计字段，一般用于填充用户信息，这个过程不需要我们来完成，但我们需要告诉jdbc从哪儿获得用户信息 
-@ReadOnlyProperty 声明属性为只读属性，也就是我们读数据的时候考虑这个属性，在进行其他操作时比如持久化（如保存）时会忽略这个属性
+**@Id** 声明属性为主键
+**@CreateBy** 声明属性为审计字段，一般用于填充用户信息，这个过程不需要我们来完成，但我们需要告诉jdbc从哪儿获得用户信息 
+**@ReadOnlyProperty** 声明属性为只读属性，也就是我们读数据的时候考虑这个属性，在进行其他操作时比如持久化（如保存）时会忽略这个属性
 
-再看雪花算法
+**雪花算法**
 
 ```
 @Configuration
@@ -239,16 +243,16 @@ public class SnowflakeGenerator {
     }
 ```
 
-@EnableJdbcAuditing 注解用于启用 Spring Data JDBC 的审计功能
+**@EnableJdbcAuditing** 注解用于启用 Spring Data JDBC 的审计功能
 当启用后，它会自动填充使用 `@CreatedBy`、`@CreatedDate`、`@LastModifiedBy` 和 `@LastModifiedDate` 注解的字段
 
-@Configuration注解标记一个类作为配置源，替代传统的 XML 配置文件
+**@Configuration**注解标记一个类作为配置源，替代传统的 XML 配置文件
 
- @Bean注解 它用于指示方法应该返回一个对象，该对象应该被注册为 Spring 应用上下文中的 Bean，这样 Spring 才能识别并使用它，给上文的@CreateBy注解的属性完成自动填充
+ **@Bean**注解 它用于指示方法应该返回一个对象，该对象应该被注册为 Spring 应用上下文中的 Bean，这样 Spring 才能识别并使用它，给上文的@CreateBy注解的属性完成自动填充
 
 
 
-为什么数据库中id要用19位字符接收？为什么不用整形？
+**为什么数据库中id要用19位字符接收？为什么不用整形？**
 在MySQL中，bigint/char类型主键没有性能差异，但是在前端中String可以避免JS无法处理19位整数的精度丢失问题
 因此使用19位字符作为主键id
 
@@ -256,8 +260,11 @@ public class SnowflakeGenerator {
 
 ### CrudRepository
 
-CrudRepository<T,ID> 接口提供了针对DO类的基本CRUD操作（create read update delete)
-T操作的DO类型，ID主键类型，提供
+**CrudRepository<T,ID>** 接口提供了针对DO类的基本CRUD操作（create read update delete)
+
+`CrudRepository`接口提供了一组基础的CRUD操作，包括保存、删除、查询等方法。
+
+T操作的DO类型，ID主键类型
 
 T save(S entity) 方法 默认保存全部属性值，值为null时也会保存到数据库，因此可能覆盖数据库设置的默认值
 如果数据库中存在同样的对象但是属性值不同，新的属性值会覆盖旧的属性值，也就是完成了update操作
@@ -269,10 +276,12 @@ T save(S entity) 方法 默认保存全部属性值，值为null时也会保存�
 使用：
 创建一个名为 repository的包，专门放置各种组件
 如对User处理的组件就创建一个名为 UserRepository 的接口，这个接口继承以上这个CRUD接口
-`CrudRepository` 提供了一组标准的 CRUD 操作，而 `UserRepository` 通过继承它，自动获得了这些操作的实现
+`CrudRepository` 提供了一组标准的 CRUD 操作，而 `UserRepository` 接口通过继承它，自动获得了这些操作的实现
 
-同时利用@Repository注解，使得Spring 应用启动时，它会扫描带有 `@Repository` 注解的类，并自动将这些类注册为 Spring 应用上下文中的 Bean， Spring 会管理这些类的生命周期，并且可以通过依赖注入的方式在其他组件中使用它们。
-你的服务层中，你可以注入 `UserRepository` 并使用它
+**@Repository注解**
+Spring 应用启动时，它会扫描带有 `@Repository` 注解的类，并自动将这些类注册为 Spring 应用上下文中的 Bean
+Spring 会管理这些类的生命周期，并且可以通过依赖注入的方式在其他组件中使用它们。
+可以注入 `UserRepository` 并使用它
 
 ```java
 @Autowired
@@ -288,12 +297,15 @@ public interface UserRepository extends CrudRepository<User,String> {
 
 如果此时调用save方法，它会按照CRUD里提供的方法进行操作
 
-@Query注解
-用于定义一个自定义的数据库查询方法
-同时需要 声明SQL查询语句
+
+
+**@Query注解**
+用于 自定义 数据库查询 方法
+既然是自定义，那么我们需要声明SQL查询语句
+方法名随意，但是最好符合规范
+
 :parameter 在声明的SQL语句内作为占位符
 
-方法名随意，但是最好符合规范
 
 ```
     @Query("""
@@ -301,11 +313,27 @@ public interface UserRepository extends CrudRepository<User,String> {
             where a.user_id =:userId
         """)
     List<Address> findByUserId(String userId);
-
 ```
 
 在例子中，查询将返回一个 `Address` 对象的列表，每个对象都是根据查询结果集中的一行数据组装而成的
 占位符那里，支持使用SpEL表达式 :#{#user.id} :声明占位符 #{声明这是EL表达式}
+
+
+
+当你在继承了`CrudRepository`的接口中定义一个自定义查询方法时，你可以指定任何类型的返回值
+`@Query`注解允许你编写自定义的JPQL（Java Persistence Query Language）或SQL查询语句。
+查询结果映射是指将查询返回的结果集映射到指定的对象中。
+这个指定的对象从哪知道？它怎么知道要映射到哪种对象里？我明明有那么多对象类
+
+- **返回类型：** 你定义的方法的返回类型告诉Spring Data JPA你希望将查询结果映射到什么类型的对象
+  例如，如果你的方法返回`List<AddressUserDTO>`，Spring Data JPA会尝试将查询结果的每一行映射到`AddressUserDTO`对象中
+
+- **别名**：在JPQL查询中，你可以使用别名来指定查询结果的列名。这些别名应该与返回类型对象的属性名匹配。
+  例如，在你的查询中，你使用了`a.id as id`，这意味着查询结果中的`id`列将被映射到`AddressUserDTO`对象的`id`属性
+  已知返回类型为AddressUserDTO，那么查询结果会尝试映射到该对象中，我们为查询结果起名字为id，那么这个字段的结果就会尝试映射到AddressUserDTO中名为id的属性中
+- **构造函数**：如果查询返回的是单个对象，Spring Data JPA会尝试使用返回类型对象的构造函数来创建对象。如果构造函数接受的参数与查询结果的列名匹配，那么这些列的值将被传递给构造函数。
+
+
 
 
 
@@ -359,9 +387,186 @@ class UserRepositoryTest {
 
 测试类命名规范：将要测试的类名+Test
 
-@Autowired 注解用于实现依赖注入
+@Autowired 注解用于实现依赖注入，在其他需要用到该组件的地方也可以通过这个引入组件
 
 UserRepository接口我们用@Repository把他放入了Spring容器里，现在通过这个注解把他注入
 @Autowired会自动引入UserRepository类型的Bean，我们声明这个类型的变量，这个Bean就注入到这个变量里了
 @Test用于标记一个方法为测试方法，然后写想测试的方法就行了
 上面@Test表记 void save()方法为测试方法，要注意测试方法名是随意的，而且不需要有参数列表，我们只需要在测试方法里面通过注入进来的组件调用我们想要测试的方法就可以了
+
+
+
+
+
+## SQL
+
+SQL语句执行顺序
+
+from
+join
+on
+where
+group by
+having
+select
+distinct
+order by
+limit
+
+当 order by 和 limit结合使用时，MySQL在确定了limit行后便不会排序了，不是全部排序完才limit的
+
+### Explain
+
+Explain是SQL查询计划分析工具，查询语句好不好 explain知道
+SQL数据库会根据查询意图创建优化查询过程，并不是我们怎么写语句它就怎么查
+咱们写的只是向SQL说明我们的意图，我们想干什么，具体怎么干由SQL决定
+
+Explain输出包括执行成本/行数/时间/循环次数等相关信息
+
+相关名词解释如下
+
+驱动表：查询时先过滤的表，跟语句书写顺序无关，重申一下，我们写的只是意图
+
+数据表访问方式 Type
+Const 基于唯一索引检索
+Eq_ref 连接时基于唯一索引检索
+Ref 基于非唯一索引检索
+Range 基于索引范围检索
+Index 基于全索引检索
+All  全表扫描
+
+查询类型 Select_type
+Simple 不含子查询的简单查询
+Materrialized 物化子查询结果为临时表
+
+![image-20241005144322704](https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241005144322704.png) 
+
+在数据库的控制台里输入SQL语句后，在上面加一个explain，一起运行，注意一起运行
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241005144417743.png" alt="image-20241005144417743" style="zoom:67%;" /> 
+
+![](https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241005144528580.png) 
+
+在result2里便可以看到本次查询的信息
+查询了四行，全表扫描
+
+```
+explain
+select * from user where id="1284873941642883072" ;
+1,SIMPLE,user,,const,PRIMARY,PRIMARY,76,const,1,100,
+可以看到这次扫描方式是 const 命中唯一索引
+
+注意这里的id 如果不是 id="1284873941642883072" 而是 id=1284873941642883072
+那么不会命中索引
+
+MySQL里 id是String类型，现在传入int 未命中索引
+MySQL里 id是 int 类型，现在传入 String可以命中索引，但是不推荐
+最好是什么类型就传入什么类型的值
+```
+
+
+
+全表扫描的查询方式all是要极力避免的！
+index 全索引扫描也是全表扫描，也要避免
+
+### Status
+
+查询数据库运行性能状态，掌握SQL语句具体执行情况
+这个Status可以让我们看到SQL到底是怎么实现我们的意图的，用了哪些函数
+Handler_read_key 命中索引次数
+Handler_read_next 基于索引读取记录次数
+Handler_read_rnd_next 没有命中索引读取数据的次数，也就是全表扫描的次数
+Handler_writer 表（包含临时表）插入数据次数，涉及到写操作，占用资源就大了
+
+怎么使用
+先运行SQL语句，然后运行
+
+```
+show session status like "handler%";
+```
+
+想清空Status就使用
+
+```
+flush status;
+```
+
+![](https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241005145622556.png) 
+
+但最好是 1.flush status 2.SQL语句 3.show ···
+
+### 实例分析
+
+现在有User表，Invi表，Detail表这个是中间表
+Detail存两个表的主键，组合作主键，并对user_id,invi_id建立索引
+
+需求：基于invi_id查询对应的user信息  invi_id=1对应2条detail记录，每个detail对应1条user记录，即一共2条user记录
+
+```
+explain
+select * from user u
+where exists
+(select i.id from invi_detail i where u.id=i.user_id and i.invi_id="1")
+
+explain
+select * from user u
+where u.id in
+(select i.user_id from invi_detail i where i.invi_id="1")
+```
+
+这两种查询方法 exist和in，explain后发现结果是一样的
+它俩的执行计划和效果相同，再次印证了我们写的只是意图 这个说法
+
+![image-20241005211444293](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241005211444293.png) 
+
+select_type前面的数字代表查询顺序，越大越先查询，数字同样时上面的先执行查询
+分析查询语句 Detail表
+key: invi_id定位1次
+Next:读取记录 2次
+创建物化子查询临时表
+write 写入子查询结果2次
+Rnd_next 为与user表关联而全表无索引读取临时表3次User表
+key 基于user_id定位2次
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241005213252296.png" alt="image-20241005213252296" style="zoom: 67%;" />  
+
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241005213413390.png" alt="image-20241005213413390" style="zoom: 67%;" /> 
+
+这四种语句执行计划完全相同，说明执行与from,where的顺序无关，SQL根据过滤条件自己选择最优方案
+
+### 实战
+
+User一对多Address，Address一对一User
+需求基于address id 查询地址以及对应用户的详细信息
+实现1：由于address一对一user因此声明查询字段对应属性名称，创造AddressUserDTO类封装
+
+```java
+@Repository
+public interface AddressRepository extends CrudRepository<Address, String> {
+
+	@Query("""
+        select a.id as id,a.detail as detail,u.id as userId,u.name as name,a.create_time as createTime,
+           a.update_time as updateTime from address a join user u on a.user_id=u.id
+        where a.id = :aid;
+	""")
+    AddressUserDTO findAddressUserDTOById(String aid);
+}
+```
+
+上述查询结果为 id detail userId name createTime updateTime，想要映射的对象为 AddressUserDTO
+
+在继承了CRUD的接口中，自定义查询的方法可以返回任何类型的值，只要你能正确映射
+
+```
+public class AddressUserDTO {
+    private String id;
+    private String userId;
+    private String name;
+    private String detail;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
+}
+```
+
+名字符合映射规则的便会映射进去，组成一个AddressUserDTO类型的对象返回回去！
+
+实现2：通过一次查询将结果分别封装在user/address对象中，再封装到一个DTO对象
