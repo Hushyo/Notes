@@ -570,3 +570,237 @@ public class AddressUserDTO {
 名字符合映射规则的便会映射进去，组成一个AddressUserDTO类型的对象返回回去！
 
 实现2：通过一次查询将结果分别封装在user/address对象中，再封装到一个DTO对象
+这个没办法直接把查询结果映射了，映射只能映射到属性里，不能映射到对象里
+
+```
+public class AddressUserDTO2 {
+    private User user;
+    private Address address;
+}
+```
+
+1. 现在有了新的接口 **RowMapper \<T> 接口** 
+   可以用来自定义行映射规则 T指的是想要映射成的对象
+   注意是Spring下的这个接口，别引入错了
+
+2. 想使用这种方式，我们首先要定义一个新的类，然后让这个类实现这个接口，接口里的T是想要映射成的类型
+   在这个实现类里重写映射方法： T mapRow（ResultSet rs，int rowNum）
+
+```
+public class AddressUserRowMapper implements RowMapper<AddressUserDTO2> {
+    @Override
+    public AddressUserDTO2 mapRow(ResultSet rs, int rowNum) throws SQLException{
+            User user = User.builder()
+                .id(rs.getString("u.id"))
+                .name(rs.getString("name"))
+                .createTime(rs.getObject("create_time", LocalDateTime.class))
+                .updateTime(rs.getObject("update_time", LocalDateTime.class))
+                .build();
+            Address address = Address.builder()
+                    .id(rs.getString("a.id"))
+                    .detail(rs.getString("detail"))
+                    .createTime(rs.getObject("create_time", LocalDateTime.class))
+                    .updateTime(rs.getObject("update_time", LocalDateTime.class))
+                    .userId(rs.getString("user_id"))
+                    .build();
+            return AddressUserDTO2.builder().user(user).address(address).build();
+    }
+}
+```
+
+要问查询结果集rs哪儿来的？你查询的时候会自动注入，不需要我们主动找。我们只需要告诉这个方法结果集的每一行应该怎么映射
+这里看到结果集里的 u.id name ···放入User对象里， a.id detail···放入Address里，然后映射方法返回一个AddressUserDTO2的对象
+到这里，新的映射规则就写好了，然后就是使用了
+
+
+
+MySQL查询结果字段 在没有自定义映射名称时(没有用as时)的命名规则
+非冲突字段 按实际字段名称，冲突字段以别名为前缀 “别名.字段"
+比如两个表都有id，那么在结果集里分别为 表1.id 表2.id，如果只有一个表有id字段，那么结果集里就是id 
+
+
+
+3. 在Query注解 显式声明 映射规则实现类
+
+```
+  @Query( value="select * from address a join user u on u.id=a.user_id where a.id=:aid",
+    rowMapperClass = AddressUserRowMapper.class)
+    AddressUserDTO2 findAddressUserByAid(String aid);
+```
+
+value属性用于指定查询语句，平时都是省略不写的
+rowMapperClass 属性接收一个类对象，指定映射规则
+ AddressUserRowMapper.class  .class用于获得一个类对象，传给这个映射规则属性
+那么本次查询的每一行结果都会按照 AddressUserRowMapper这个类里的映射规则进行映射，用对应类型对象接收就行了
+
+
+
+需求 基于用户ID获取用户基本信息以及所有信息地址
+
+```
+public class UserAddress {
+    private User user;
+    private List<Address> addresses;
+}
+```
+
+想要通过用户ID查询到用户对应的所有address
+
+方法一，单独定义一个返回值为List\<Address>的方法，拿到结果后跟User封装
+
+```
+    @Query("select * from address a where a.user_id=:userId")
+    List<Address> findAddressByUserId(String userId);
+    这个方法放在哪个组件里都行，放UserRepository可以，放AddressRepository也行
+    
+    @Test
+    public void findAddressByUserId(){
+    User user = userRepository.findById("userId");
+    List<Address> addresses = addressRepository.findAddressByUserId("userId");
+    UserAddress userAddress = UserAddress.builder().user(user).addresses(addresses).build();
+    }
+```
+
+但是这样太慢了，我们需要方法二
+明明一条SQL语句就可以查询出全部结果，但是默认结果集包含User冗余数据，并且无法自动映射封装
+新接口来了
+
+**ResultSetExtractor\<T>接口**
+自定义 结果的映射实现规则  T仍然是想要映射成的对象类型
+比如将多条记录映射为一个对象，组装一个集合
+
+同样需要创建实现类，然后重写 T extractData(Result rs) 映射方法
+这里传入的 ResultSet为整个结果集对象，不像RowMapper那里的rs只是结果集中的一行
+这里虽然是整个结果集，但是游标在最上面，需要我们手动移动游标来获取每一行的信息
+
+```java
+public class UserAddressResultSetExtractor implements ResultSetExtractor<UserAddress> {//T是想要映射成的类型
+
+    @Override
+    public UserAddress extractData(ResultSet rs) throws SQLException, DataAccessException {
+    //由于查询结果集中每一行的User都一样，所以我们只需要创建一次User对象就行了
+    //先让User=null，当user=null时，我们封装一个user即可
+        User user = null;
+        List<Address> addresses = new ArrayList<>();
+        while(rs.next()) {
+            if(user == null) {
+                user = User.builder()
+                        .id(rs.getString("u.id"))
+                        .name(rs.getString("name"))
+                        .createTime(rs.getObject("create_time", LocalDateTime.class))
+                        .updateTime(rs.getObject("update_time", LocalDateTime.class))
+                        .build();
+            }
+            Address a = Address.builder()
+                    .id(rs.getString("a.id"))
+                    .userId(rs.getString("user_id"))
+                    .detail(rs.getString("detail"))
+                    .createTime(rs.getObject("create_time", LocalDateTime.class))
+                    .updateTime(rs.getObject("update_time", LocalDateTime.class))
+                    .build();
+                    
+            addresses.add(a);
+        }
+        return UserAddress.builder()
+                .user(user)
+                .addresses(addresses)
+                .build();
+    }//最后把两种封装起来返回去
+}
+```
+
+在组件里仍然需要Query显式声明映射规则
+
+```java
+@Query(value=("select * from user u join address a on u.id=a.user_id where u.id=:userId"),
+        resultSetExtractorClass = UserAddressResultSetExtractor.class
+)
+UserAddress findAddressByUserId(String userId);
+```
+
+然后测试
+
+```java
+@Test
+void findAddressByUserId() {
+    UserAddress userAddress = addressRepository.findAddressByUserId("1284873941642883072");
+    log.debug(" debug: {}",userAddress.getUser());
+    userAddress.getAddresses().forEach(a-> log.debug(" debug: {}",a));
+}
+```
+
+
+
+
+
+## NoSQL
+
+关系型数据库SQL是基于关系模式创建的二维表格模型，缺点：
+结构化的数据模型不利于扩展与变更
+不适合处理海量数据，不原生支持分布式集群···
+范式强调减少冗余反而影响了查询效率
+
+于是 非关系型数据库应运而生，用于储存非结构化数据的数据库系统
+增强了数据的可扩展性，内存数据库增强了操作效率和速度
+
+- 键值型数据库 Redis
+- 文档型数据库 MongDB/Redis7
+- 列祖型数据库 HBase
+
+目前主流的关系型数据库都支持了json数据类型字段，因此SQL和NoSQL混合设计开发模式非常高效
+通过冗余数据换取查询效率
+
+
+
+### 实例
+
+教师信息数据库设计，需求
+专业部门信息
+教师，属于某一部门
+需要加载指定部门的所有教师 功能
+需要基于教师ID加载教师信息以及所属部门信息 功能
+
+1. 如果按照范式设计
+   部门表：部门信息
+   教师表：教师信息+部门ID，在部门ID上面建立索引（因为不能用外键）
+   				获取部门信息时必须并表查询
+2. 反范式设计，愿意冗余
+   部门信息不会经常变更，可以直接将部门信息以冗余信息的形式存储在教师表
+   可以从教师表直接查询教师及部门信息而无需并表查询
+   同时添加JSON类型中部门ID属性为索引，可通过部门ID获取全部教师而无需全表扫描
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241006144037941.png" alt="image-20241006144037941" style="zoom: 50%;" />   
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241006144112183.png" alt="image-20241006144112183" style="zoom:50%;" /> 
+
+JSON Index
+index(   (   cast(  department->>'$.depId' as char(19)   )    collate utf8mb4_bin   )   )
+第一组括号：建立索引
+第二组括号：声明索引表达式
+
+department - >> '$.depId' 声明获取 JSON字段 department中的 depId属性值
+并将值的双引号去掉，按照LONGTEXT类型返回utf8mb4_bin编码
+
+ cast（）函数 将值强制转换为指定长度类型 as char(19)
+并且按照 utf8mb4_0900_ai_ci编码存储，此时与 ->>表达式结果编码不同
+
+collate utf8mb4_bin  cast()函数按照指定编码存储，确保在查询时无需声明编码
+
+如果不强制声明cast（）函数存储编码就需要在查询语句里显式声明转换，否则无法命中索引
+
+
+
+查询时也可以直接用JSON字段里的属性，同样需要双箭头
+
+```
+explain
+select * from teacher t where t.department->>'$.depId'="1";
+
+1,SIMPLE,t,,ref,functional_index,functional_index,79,const,1,100,
+如果数据类型不匹配，查询也能查出来，但是不会命中索引！！！
+结果正确但是效率低，这种情况很难发现，因此写时要注意类型
+select * from teacher t where t.department->>'$.depId'=1;
+1,SIMPLE,t,,ALL,,,,,1,100,Using where
+```
+
+JSON字段名 - >> '\$.键名' $代表根，取根下的键名对应的值
