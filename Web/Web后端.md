@@ -533,7 +533,7 @@ key 基于user_id定位2次
 
 这四种语句执行计划完全相同，说明执行与from,where的顺序无关，SQL根据过滤条件自己选择最优方案
 
-### 实战
+### 设计
 
 User一对多Address，Address一对一User
 需求基于address id 查询地址以及对应用户的详细信息
@@ -578,6 +578,8 @@ public class AddressUserDTO2 {
     private Address address;
 }
 ```
+
+#### **RowMapper \<T> 接口** 
 
 1. 现在有了新的接口 **RowMapper \<T> 接口** 
    可以用来自定义行映射规则 T指的是想要映射成的对象
@@ -665,7 +667,8 @@ public class UserAddress {
 明明一条SQL语句就可以查询出全部结果，但是默认结果集包含User冗余数据，并且无法自动映射封装
 新接口来了
 
-**ResultSetExtractor\<T>接口**
+#### **ResultSetExtractor\<T>接口**
+
 自定义 结果的映射实现规则  T仍然是想要映射成的对象类型
 比如将多条记录映射为一个对象，组装一个集合
 
@@ -733,6 +736,76 @@ void findAddressByUserId() {
 
 
 
+### Pagination
+
+分页
+基于 MySQL limit 语句实现分页 `limit offset,size`
+offset 偏移量。从offset位置后面计算
+size offset后面的记录个数
+
+```
+@Query("""
+   select * from user u 
+    limit :offset,:pageSize
+   """)
+List<User> findAll(int offset, int pageSize);
+```
+
+ 传入偏移量和页面size比如 
+findAll(5,5)那么查出来5个，从5后数5个，也就是6-10
+这个意思就是 每页5条记录，根据offset翻页
+
+规范来写就像下面这样
+
+```
+int pageSize=5;
+int page=4;
+findAll((page-1)*pageSize,pageSize)
+```
+
+ (page-1)*pageSize 用于计算偏移量
+第一页 page=1 算出来偏移量=0，那么第一页是 1-pageSize
+第二页 page=2 算出来 偏移量就是pageSize，那么第二页就是pageSize+1 - 2\*pageSize
+
+#### Pageable接口
+
+Pageable接口 封装 offset/pageSize等分页数据
+注意正确引入 ：springframework.data.domain.Pageable
+
+PageRequest实现类，这个实现类可以直接用
+PageRequest.of(int pageNumber,int pageSize) 根据指定的页数以及每页个数，封装计算limit的offset(我们不参与，它自己算)
+
+```
+@Query("""
+   select * from user u 
+    limit :#{#pageable.offset},:#{#pageable.pageSize}
+   """)
+List<User> findAll(Pageable pageable);
+```
+
+#{ } 声明SpringEL表达式
+里面的#引用参数，通过对象.属性引用
+SpringEL表达式没有自动提示
+
+
+
+#### **Sorted**
+
+MySQL order by 语句实现排序
+order by 必须根据select中包含的字段排序
+select中如果没有包含A，是不能通过A排序的 这个意思
+
+```html
+@Query("""
+   select * from user u 
+   order by u.id desc
+    limit :#{#pageable.offset},:#{pageable.pageSize}
+   """)
+List<User> findByIdDesc(Pageable pageable);
+```
+
+
+
 ## NoSQL
 
 关系型数据库SQL是基于关系模式创建的二维表格模型，缺点：
@@ -753,6 +826,8 @@ void findAddressByUserId() {
 
 
 ### 实例
+
+#### 教师数据库
 
 教师信息数据库设计，需求
 专业部门信息
@@ -781,10 +856,11 @@ index(   (   cast(  department->>'$.depId' as char(19)   )    collate utf8mb4_bi
 department - >> '$.depId' 声明获取 JSON字段 department中的 depId属性值
 并将值的双引号去掉，按照LONGTEXT类型返回utf8mb4_bin编码
 
- cast（）函数 将值强制转换为指定长度类型 as char(19)
+ cast（··· as char(19)  ）函数 将值强制转换为char类型，而且还限制了长度为19捏
 并且按照 utf8mb4_0900_ai_ci编码存储，此时与 ->>表达式结果编码不同
 
 collate utf8mb4_bin  cast()函数按照指定编码存储，确保在查询时无需声明编码
+`collate utf8mb4_bin`: 这部分指定了字符集和校对规则。`utf8mb4`是一种字符集
 
 如果不强制声明cast（）函数存储编码就需要在查询语句里显式声明转换，否则无法命中索引
 
@@ -804,3 +880,47 @@ select * from teacher t where t.department->>'$.depId'=1;
 ```
 
 JSON字段名 - >> '\$.键名' $代表根，取根下的键名对应的值
+
+
+
+#### 打分表
+
+毕业设计成绩由若干过程组成：开题/期中/毕业答辩等
+每个过程包含若干比例的评分项：开题：报告50%前瞻创新型25%答辩说明25%
+教师为学生的每个过程中的每个子项评分
+
+按范式设计
+过程表：包含过程名称/描述等 1:N过程项
+过程项表：每个过程子项的详细信息：过程ID，项名称/描述等 1:1过程
+评分表：教师ID/学生ID/子项ID/评分，唯一约束
+
+3张表，5名教师为20名学生的开题评分（3子项）
+那么有 5\*20\*3 = 300条记录 查询时还得并表查询
+
+反范式冗余设计
+
+过程表：将过程子项按JSON数组存储，比如过程“开题” 有三个子项：报告50%前瞻创新型25%答辩说明25%
+评分表：过程ID/学生ID/教师ID，将教师每个过程子项评分和教师姓名以JSON冗余字段存储，唯一约束
+
+2张表 5个教师为20学生开题评分，5*20 = 100条记录
+
+过程表数据库设计
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241008163654533.png" alt="image-20241008163654533" style="zoom: 50%;" /> 
+
+items 子项，存过程子项名，占比，以及描述
+
+打分表
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241008164146554.png" alt="image-20241008164146554" style="zoom: 50%;" /> 
+
+每名教师在每个过程下为每名学生的打分是唯一的，所以建立唯一索引，上面的index换成unique，便于查询
+
+
+
+还有另一种方式
+打分表中每个学生每个过程唯一，可以将教师id也扔进去
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241008165952104.png" alt="image-20241008165952104" style="zoom:50%;" /> 
+
+
+
+对于经常查但是不更新的数据，我们才考虑用JSON冗余存储，因为改JSON有点麻烦
+
