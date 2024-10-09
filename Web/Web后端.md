@@ -984,8 +984,9 @@ Spring容器中组件默认为单例模式
 ### @Configuration
 
 默认@Configuration注解修饰的类，会被创建代理对象并作为bean放在容器的配置组件里
-这个注解是配置类注解，但他仍然算是一个组件，既然是组件便位于容器中，而只有在容器中才能使用容器中的其他组件
+这个注解是配置类注解，但他仍然算是一个组件,可以注入到其他地方使用
 只是一般没人把这个注解类当组件用罢了
+
 这个类里面的方法 boolean proxyBeanMethod() 默认返回值 true 用来创建代理对象的
 这个代理对象没什么用，可以把这个返回值设置为 false 这样可以节省一些资源 (●'◡'●)
 怎么设置？ @Configuration(proxyBeanMethod = false) 这样写注解就行了
@@ -996,12 +997,21 @@ Spring容器中组件默认为单例模式
 
 ### @Bean
 
-没有声明@Configuration的普通类中。使用@Bean注解修饰的方法仍然会被扫描
-没有@Configuration的类仍然会扫描，那要这个注解有什么用？只有@Bean修饰，这个方法仍然会被注册并放入容器中
-不注解说明这个类不是组件，既然不是组件就不会放入Spring容器中，不再容器中就不能使用容器中其他组件
-如果需要使用其他组件，则必须使用注解声明类也是组件，这就是@Configuration注解的必要性
+类本身没有使用`@Configuration`注解
+只要方法使用了`@Bean`注解，Spring容器在启动时会扫描带有`@Bean`注解的方法，并将这些方法的返回值注册为Bean
 
+没有@Configuration注解，但是方法仍然会扫描并注册，那要这个注解有什么用？
 
+不注解说明这个类不是组件，既然不是组件就不会放入Spring容器中，不能注入其他依赖组件中使用
+这就是@Configuration注解的必要性
+
+如果你只使用`@Bean`而不使用`@Configuration`，那么定义的类不会被Spring上下文管理，它仅仅是一个普通的Java类。这意味着：
+
+- 它不会自动注册为Spring的Bean。
+
+- 你需要手动通过编程方式注册这个Bean，例如通过`AnnotationConfigApplicationContext`的`registerBean`方法。
+
+- 它不会参与到Spring的依赖注入机制中。
 
 ### 组件注入
 
