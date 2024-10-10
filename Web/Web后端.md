@@ -1002,7 +1002,7 @@ Spring容器中组件默认为单例模式
 
 没有@Configuration注解，但是方法仍然会扫描并注册，那要这个注解有什么用？
 
-不注解说明这个类不是组件，既然不是组件就不会放入Spring容器中，不能注入其他依赖组件中使用
+**不注解说明这个类不是组件，既然不是组件就不会放入Spring容器中，不能注入其他依赖组件中使用**
 这就是@Configuration注解的必要性
 
 如果你只使用`@Bean`而不使用`@Configuration`，那么定义的类不会被Spring上下文管理，它仅仅是一个普通的Java类。这意味着：
@@ -1018,5 +1018,252 @@ Spring容器中组件默认为单例模式
 Spring推荐使用基于组件的构造函数注入依赖的其他组件，因为它可以确保对象在使用之前已经完全初始化
 我们之前是使用@Autowired 注解注入其他组件，但是这个仅推荐在测试里使用
 
+假如我们有一个Example类，它依赖UserRepository和AddressRepository来实现功能
+
+不注入
+
+```
+public class Example{
+	
+	private final UserRepository userRepository;
+	private final AddressRepository addressRepository;
+
+	不注入的情况下，我们需要手动实例化需要的类
+	public Example(){
+	this.userRepository=new UserRepository();
+	this.addressRepository = new AddressRepository();
+	}
+	
+	public void method(){
+	userRepository.find();
+	return;
+	}
+}
+```
+
 使用构造函数注入组件↓ 
+
+```
+@Component
+public class Example{
+	
+	private final UserRepository userRepository;
+	private final AddressRepository addressRepository;
+	
+	当我们实例化Example时，Example的构造函数里两个参数对象不是我们自己创建的，我们并没有new一个实例。
+	那这个实例是从哪儿来的？是容器注入的，这就是注入，不需要我们自己创造对象
+	
+	public Example(UserRepository userRepository,AddressRepository addressRepository){
+	this.userRepository=userRepository;
+	this.addressRepository = addressRepository;
+	}
+	
+	public void method(){
+	userRepository.find();
+	return;
+	}
+}
+```
+
+**final**
+
+final 修饰的字段在表示一旦这个变量被初始化赋值后，它的值就不能再被改变
+也正因为 final字段的不变性，导致final修饰的字段在构建对象前**必须被初始化**
+
+final字段初始化有两种方式：
+1.构造函数里初始化 
+2.声明时直接初始化   private final int value = 42; 
+
+如果你既没有在声明时直接初始化`final`字段，也没有在构造函数中为它赋值，那么编译器将会报错
+因为`final`字段必须在对象构造完成之前被初始化！！！
+
+
+
+那么我们通过把组件声明为final，那么保证了该类实例化成对象的话，一定已经加载好了它依赖的其他组件。
+换个说法就是 依赖组件成功注入类中。
+
+但是手动写构造函数很麻烦，如果后来需要增加组件，那么也要在构造函数里手动写。
+我们能不能通过注解比如@AllArgsConstructor使编译时自动创建构造函数？
+可以的，但是我们并不需要用到全参构造函数，我们可以使用@RequiredArgsConstructor注解
+这个注解会创建由必需属性组成的构造函数以及无参构造函数
+必须属性也就是由 final 修饰的属性
+达到了自动创建组件构造函数的目的
+
+```
+@Component
+@RequiredArgsConstructor
+punlic class Example{
+	private final UserRepository userRepository;
+	private final AddressRepository addressRepository;
+	
+	public void method(){
+	userRepository.find();
+	return;
+	}
+	
+}
+```
+
+在 `Example` 类的 `method` 方法中，可以直接调用 `userRepository` 的 `find` 方法
+因为 `userRepository` 已经被注入到 `Example` 类的实例中
+Example 类创建实例时，依赖已经通过构造函数注入该实例了，所以该实例可以使用  userRepository的方法，没疑惑了吧
+
+
+
+Spring容器启动时，扫描并创建指定路径下全部组件的实例
+并且以键值对的形式保存实例，键为 类名且首字母小写形式保存，值就是容器创建的对象
+所以当你的组件里存在同名组件时，会报错，容器启动异常
+就算同名组件不在同一个路径下，它生成的实例也会放到Spring容器里导致重名
+所以默认情况下，不要声明同名组件
+
+真想整同名组件，你就要显式指定这个组件名称
+在组件注解括号里写上你想命名的名字 比如
+
+```
+A包下
+@Repository("dao.userdao")
+public class UserDao{}
+B包下
+@Repository
+public class UserDao{}
+```
+
+
+
+Spring框架中，组件通常不是以接口形式存在的，而是以类的形式存在
+我们把类声明为组件，使用时可以直接创建类的对象
+
+当你声明一个接口为Spring组件，并且没有显式地提供一个实现类时
+实际上你通常是在使用Spring Data JPA或者其他类似的Spring框架特性，这些框架会在运行时自动为你生成实现类
+
+以Spring Data JPA为例，当你声明一个接口并让它扩展了`Repository`或其子接口（如`CrudRepository`、`JpaRepository`等）
+Spring Data JPA会在运行时动态地为你的接口创建一个代理实现类。
+这个代理类实现了接口中定义的所有方法，包括你使用`@Query`注解自定义的查询方法。
+
+如果基于接口类型注入对象，但是同时存在多个实现类，那么容器会抛出异常，因为不知道要注入哪个实现类对象
+我们可以对其中一个实现类使用@Primary注解，这样的话，注入时会选择这个实现类
+
+当我们使用@Autowired基于类型注入，但是需要选择一个实现类时，需要使用@Qualifier注解声明对象名称
+这个优先级比 @Primary高，即使当时有 其他实现类注解了@Primary，它也会选择@Qualifier指定的实现类注入
+
+```
+@Autowired
+@Qualifier（实现类名）
+private UserRepository userRepository;
+```
+
+
+
+
+
+如果想让Spring容器自动注入组件，需要把这个类声明为组件，如果它不是组件类，那么Spring不会把组件注入进去
+
+当然，非组件类也可以手动获取容器中的Bean，或者用@Autowired注解使用容器中的组件
+如果你不想使用`@Autowired`或手动获取Bean，那么非组件类将无法直接使用Spring容器中的组件。
+上面的通过构造函数获得组件也当然不行。
+
+
+
+### @value
+
+@Value  修饰组件属性，可以基于SpEL表达式注入值（如配置文件中的自定义值等）
+${ } 引用 application.yml配置中声明的变量
+
+```
+@Component
+public class Example{
+	@Value("${my.secretkey}")
+	private String secretkey;
+}
+这个注解会把application.yml里这个值拿过来注入到这个属性里
+application.yml里
+my:
+  secretkey: ABCD
+```
+
+避免以硬编码形式放入代码中
+我们可以把一些token/第三方密钥等声明在配置文件里，然后github ignore这个配置文件，达到保密效果
+
+
+
+### Events
+
+Spring容器运行生命周期会触发一系列事件，可以通过指定事件监听器监听所需事件
+@EventListener 指定监听事件类型，回调执行修饰的方法
+支持自定义监听事件
+
+有些初始化数据必须通过业务（java）添加，比如密码，总不能让SQL语句作运算
+因此可以通过容器启动监听器完成数据记录初始化，从而降低数据库部署难度，增加项目可维护性
+
+
+
+
+
+### 实例
+
+```
+package org.example.jdbcexamples.repository;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class Demo {
+    public void demo() {
+        System.out.println("注入成功");
+    }
+}
+```
+
+DemoTest 依赖于 demo ，需要注解DemoTest为组件才能让 容器通过构造函数注入
+同时使用Required注解记得把 demo 用final修饰
+
+```
+package org.example.jdbcexamples.repository;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@RequiredArgsConstructor
+@Component
+public class DemoTest {
+    private final Demo demo;
+
+    public void demoTest(){
+        demo.demo();
+    }
+}
+```
+
+然后使用DemoTest时，不要
+DemoTest demoTest = new DemoTest();这样就白费了
+你手动创建的实例是无参的，需要用的是容器注入进来的demoTest
+
+你应该是让容器给你注入一个
+
+@Autowired
+DemoTest demoTest；
+
+然后直接使用demoTest，而不是自己创建一个没用的对象
+
+```
+package org.example.jdbcexamples.repository;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+class DemoTestTest {
+
+    @Autowired
+    private DemoTest demoTest;
+
+    @Test
+    void demoTest() {
+        demoTest.demoTest();
+    }
+}
+```
 
