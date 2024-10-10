@@ -1001,19 +1001,28 @@ Spring容器中组件默认为单例模式
 只要方法使用了`@Bean`注解，Spring容器在启动时会扫描带有`@Bean`注解的方法，并将这些方法的返回值注册为Bean
 
 没有@Configuration注解，但是方法仍然会扫描并注册，那要这个注解有什么用？
+没有使用这个注解，说明这个类不是组件，是非组件类，Spring不会自动向这个类里注入组件
+那么如果@Bean修饰的方法使用到其他组件，但是这些组件没有注入，那么这个方法就不能正确执行，于是这个方法完蛋了
 
-**不注解说明这个类不是组件，既然不是组件就不会放入Spring容器中，不能注入其他依赖组件中使用**
-这就是@Configuration注解的必要性
+非组件类想用其他组件，必须手动申请注入
 
-如果你只使用`@Bean`而不使用`@Configuration`，那么定义的类不会被Spring上下文管理，它仅仅是一个普通的Java类。这意味着：
 
-- 它不会自动注册为Spring的Bean。
 
-- 你需要手动通过编程方式注册这个Bean，例如通过`AnnotationConfigApplicationContext`的`registerBean`方法。
+Bean是一种对象，生命周期由Spring容器管理
+用注解修饰类后，Spring容器启动时会创建其实例并管理
+其他Bean使用它时会自动注入给这些Bean，它使用其他Bean时容器也会自动注入给它
 
-- 它不会参与到Spring的依赖注入机制中。
+进一步说明，非组件类别想让Spring自动注入组件给你，Spring不会主动管你的
 
 ### 组件注入
+
+#### @Autowired
+
+基于类型注入
+Spring容器会根据注入点类型（注解修饰的类型）查找容器中所有匹配该类型的Bean并注入
+这种基于类型注入的方式不管Bean的名称，只关心其类型
+
+#### 构造函数
 
 Spring推荐使用基于组件的构造函数注入依赖的其他组件，因为它可以确保对象在使用之前已经完全初始化
 我们之前是使用@Autowired 注解注入其他组件，但是这个仅推荐在测试里使用
@@ -1267,3 +1276,137 @@ class DemoTestTest {
 }
 ```
 
+
+
+
+
+## Mockito
+
+### 问题
+
+在单元测试时，如果依赖的服务未开发完成，或者依赖的对象不方便构造，可以通过Mock模拟组件对象
+
+解决问题：
+A依赖B，但是B没开发完，那么如何对A进行单元测试？
+如果A需要等B开发完才能测试，那这还能叫并行开发吗？
+
+```
+@Repository
+public interface UserRepository{
+	User save(User user);
+	
+	User findById(String id);
+}
+```
+
+以上这个接口声明为组件，但是没有继承CRUD接口，那么Spring不会对它自动创建一个代理的实现类
+也就是说，这个接口根本没开发完
+
+```
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class UserService{
+	private final UserRepository userRepository;
+	
+	public User addUser(User user){
+		return userRepository.save(user);
+	}
+	
+    public User findById(String uid){
+    	return userRepository.findById(uid);
+	}
+}
+```
+
+这个业务依赖的User组件未开发完成，那么如何测试这个组件？
+
+
+
+### @MockBean
+
+@MockBean 由它声明修饰的组件将由 Mock框架创建模拟对象，而非注入真实的组件对象
+
+```
+@MockBean
+private UserRepository userRepository;
+```
+
+这个注解修饰这个组件，Mock框架会模拟一个对象注入进来，但是注入进来的是假的！！！
+就算这个组件已经完成了，它仍然会注入一个假的，跟真实存在的这个组件一点关系都没有
+
+测试
+
+```
+@SpringBootTest
+@Slf4j
+class UserServiceTest{
+	@MockBean
+	private UserRepository userRepository;
+	模拟下面要测试的组件需要的组件
+	@Autowired
+	private UserService userService;
+	注入要测试的组件
+}
+```
+
+
+
+Mockito的方法
+
+when( ) 模拟Mock组件方法调用
+anyX( ) 模拟调用Mock对象方法时传入的参数
+thenReturn( ) Mock组件方法调用时的返回值
+thenThrow( ) Mock组件抛出指定异常对象
+thenAnswer( ) Mock组件方法调用时执行操作，里面放入一个函数可以是箭头函数，组件方法调用就会执行函数
+
+```
+@Test
+void getUser(){
+	Mockito.when(userRepository.findById("1"))
+	//when方法，模拟调用了组件的方法
+	//假装我们调用了，然后我们既然调用了这个方法，那么我们需要假装返回了一个值
+		   .thenReturn(User.builder().id("1").name("P").build());
+		   //假装返回值，实际上并没有返回值让我们用，所以连返回值也需要我们模拟
+		   //按照这个方法预定的返回值类型模拟，不是让你乱模拟
+		   
+	上述两句的意思是，当我们调用这个方法且传入参数为字符串1时，便会返回一个 id=1 name=p的User对象
+	
+	User u = userService.getUser("1"); 这里调用了 userRepository.findById("1"),那么会返回上述对象
+	log.debug("{}",u);
+	// id=1.name=p
+	
+	
+	User u2 = userService.getUser("2");
+	//这里想调用 userRepository.findById("2"),但是我们没有模拟这个方法，没有返回值
+	log.debug("{}",u2)
+	// null
+}
+```
+
+
+
+anyX( )使用
+
+```
+@Test
+void getUser() {
+    Mockito.when(userRepositoryMock.findById(Mockito.anyString()))//这里用到了anyX，X是String
+            .thenReturn(User.builder().id("1").name("Pang").build());
+    意思是，调用userRepositoryMock.findById(任意字符串参数)，都会返回上述对象
+    User u = userService.getUser("1");
+    User u2 = userService.getUser("2");
+    上述两种调用全符合我们设置的when 所以都会返回设置的模拟值
+    System.out.println(u.toString()); //User(id=1, name=Pang, createTime=null, updateTime=null)
+    System.out.println(u2.toString()); //User(id=1, name=Pang, createTime=null, updateTime=null)
+
+}
+```
+
+
+
+
+
+# SpringMVC
+
+SpringMVC项目创建
