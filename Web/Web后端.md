@@ -1512,3 +1512,55 @@ public class example {
 然后浏览器输入 localhost:8080/ 这是服务器根
 localhost:8080/api/address
 <img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241011110312598.png" alt="image-20241011110312598" style="zoom:67%;" /> 页面显示这个json对象
+
+
+
+数据返回成功是这个样子，要是数据返回失败呢？或者某种请求根本没有要求返回数据呢？那怎么办
+
+数据仅仅是需要返回信息的一部分，我们还需要其他信息比如请求是否成功，这些信息需要封装后再返回
+于是用到了VO类，VO类专门用来封装返回信息
+
+## View Objects
+
+前后端按照约定创建VO类（ResultVO），封装业务码/异常信息/数据等
+业务码可以自定义，封装数据后返回
+
+```
+@Data //这个Data是必须的，不然没有gettersetter方法
+@Builder
+public class ResultVo {
+    
+    private int code;
+    private String message;
+    private Object data;
+    
+    public static ResultVo success(Object data) {
+        return ResultVo.builder().code(200).data(data).build();
+    }
+}
+```
+
+message是失败时的错误信息，请求成功就不需要封装message了
+code是处理结果码，用整形放
+data是返回的数据，用Object接收，可以接受更多类型的对象
+
+现在GetMapping修饰的方法返回值应该改成ResultVo了，然后把刚才的data塞进去
+封装过程隐藏，把封装方法暴露出去
+
+```
+@RequestMapping("/api/")
+@RestController
+public class example {
+    @GetMapping("address")
+    public ResultVo getAddress(){
+        return ResultVo.builder()
+                .code(200)
+                .data(Address.builder().id("1").detail("地址").build())
+                //data传入一个对象，也就是要返回的数据
+                .build();
+    }
+}
+浏览器输出结果
+{"code":200,"message":null,"data":{"detail":"地址","id":"1"}}
+```
+
