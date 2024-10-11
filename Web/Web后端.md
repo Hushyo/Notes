@@ -1410,3 +1410,105 @@ void getUser() {
 # SpringMVC
 
 SpringMVC项目创建
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241010224930989.png" alt="image-20241010224930989" style="zoom:50%;" /> 
+右键工作区，选择新建模块
+SpringMVC只需要
+
+- Lombok
+- Spring Web
+
+两个依赖就可以了，后期需要其他的再加
+其实还有一个依赖可以选：SpringBoot devtools 这样页面失去焦点就会重新渲染，热部署，不用我们重启项目
+这个依赖更适合开发环境，学习环境下用不上这个，每次改东西后手动重启就行
+
+之前交互是一个Servlet类指定处理对一个路径的请求
+现在SpringMVC，容器启动时，扫描到Controller组件，注册controller里的 请求处理方法
+匹配到HandlerMapping
+
+Dispatcher(分发器)  拦截所有请求，然后再内部判断转发到哪个组件处理，这个是**所有请求的入口**
+Dispathcer调用 HandlerMapping 查找与请求相匹配的Controller组件，并将对应请求发送到这个组建的方法处理处  **这个是转发**
+
+Controller方法调用业务逻辑组件处理业务逻辑，然后序列化返回的数据，返还给请求方   **这个是处理**
+
+
+
+## RESTful
+
+REpresentational State Transfer (REST) or RESTful，一种思想
+
+Resources 资源，网络上的任何信息实体，文章/图片/音乐/服务都可以算是资源
+而每个资源都有唯一的URL
+
+Representation 表现 每个资源都有多种外在表现形式
+例如服务器可以以HTML王爷的形式把多种形式的资源发送给客户端
+
+State Transfer 状态转化，客户端基于无状态的HTTP协议，通过HTTP GET/POST/PUT/PATCH/DELETE
+请求动作描述对资源的操作，从而完成互交
+
+REST API ，用这个统一的协议，数据库可以为所有终端梯控数据服务，各终端根据自己的形式渲染数据
+
+REST规范要求 请求中包含状态，而不是让服务器保存状态
+服务器不再使用HTTP session维护(保存)客户端的状态
+RESTful是一种鞥个而不是标准
+默认浏览器仅能发送 GET/POST请求。因此基于浏览器的请求需要通过JS完成
+
+## Github RESTful API
+
+- GET
+
+  获取全部仓库下/指定用户/指定仓库/全部议题下/指定议题内容
+  /repos/{:owner}/{:repo}/issues/{:number}
+
+  获取全部仓库下/指定用户/指定仓库/全部议题下/指定议题/全部评论
+  /repos/{:owner}/{:repo}/issues/{:number}/comments
+
+- POST
+
+- PATCH
+
+- DELETE
+
+
+
+## Jackson
+
+Java Json解析框架，提供将Java对象序列化/反序列化为json对象等
+序列化：把java对象转换成Json对象，也就是用纯字符串描述java对象
+反序列化：把json对象转换为java对象，把纯字符串转化为java对象
+
+Json这种纯字符串的对象使得不同语言的对象能够相互传递
+
+## Mapping
+
+@Controller 声明为控制层组件，默认返回视图
+
+@RestController 默认组件中全部方法返回  序列化的json数据
+组件中的方法返回值最终会 变成json数据返回去
+
+@RequestMapping 请求映射，类型级方法级，可用于给组件提供一个根路径
+
+@GetMapping/@PostMapping/@PatchMapping/@PutMapping/@DeleteMapping
+修饰组件中的方法，分别处理对应的HTTP请求类型
+
+Controller组建的一个方法就可以处理一个请求，而Servlet类最多处理一个GET+一个POST
+因此两个 controller方法就能实现一个Servlet的功能
+
+```
+@RequestMapping("/api/")//  /api/是这个组件的根路径，组件内所有注解内的路径都会与其拼接后使用
+@RestController
+public class example {
+
+    @GetMapping("address")  //   处理 项目部署根/api/address路径的Get请求
+    public Address getAddress(){
+        return Address.builder().detail("string").build();
+    }
+由于组件用RestController注解，返回值会变成json对象
+}
+```
+
+项目启动后访问这个地址可以看到结果，注意是启动下面这个的 main函数
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241011110204940.png" alt="image-20241011110204940" style="zoom:50%;" /> 
+
+然后浏览器输入 localhost:8080/ 这是服务器根
+localhost:8080/api/address
+<img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241011110312598.png" alt="image-20241011110312598" style="zoom:67%;" /> 页面显示这个json对象
