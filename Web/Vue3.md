@@ -63,6 +63,12 @@ npm install 这是在这个文件夹内安装npm
 
 
 方法二 vite
+
+目前还是不要用这个了，这个创建完怎么没有App.vue?
+所以用vue@latest
+
+
+
 输入 
 `npm create vite@latest`
 然后输入名字，选择`JavaScript`就直接成功了
@@ -141,9 +147,147 @@ View和Model不能直接通信，达到解耦效果
 
 
 
+VSCODE可以同时运行多个终端的项目
+只需要右键项目，选择在集成终端中打开
+然后 npm install  npm run dev 就行了
 
 
 
 
 
+# Vue基础
+
+1. index.html是入口，非常重要，但是里面基本不写东西
+   用link引入其他东西，或者把组件挂在里面的元素上
+
+   ![image-20241011135251388](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241011135251388.png)
+
+2. 项目结构里 路径 src 下可能有一个 style.css  可以删掉
+   比年项目创建自带的样式代码影响项目效果
+
+3. 
+
+
+
+## 单文件组件
+
+每个 .vue 文件都是一个单文件组件
+每个单文件组件都由  模板、样式 和 逻辑 三部分构成
+
+1. 模板
+   用于搭建当前组件的DOM结构
+   代码在 \<template> 标签中
+
+   把\<template>标签当作body标签用就挺好的
+
+2. 样式
+   组件中的CSS样式
+   代码在 \<style>标签中
+
+3. 逻辑
+   指的是通过JS代码处理组件的数据与业务
+   代码在 \<script> 标签中
+
+组件一般放在 src下的 components包下
+App.vue除外，这个一般作为全局组件
+
+
+
+组件如何使用
+main.js中
+
+```
+import './assets/main.css'
+这个是样式，可以删掉
+
+import { createApp } from 'vue'
+这个是从 vue 中引入方法 createApp
+
+import App from './App.vue'
+这个是引入 App.vue这个组件并且命名为 App
+命名随意的，引入和命名名字不一样也没问题
+./代表本文件所在的目录
+
+createApp(App).mount('#app')
+调用方法 createApp(App) 传入 App.vue 组件
+效果是创建一个应用（App）
+然后调用 .mount方法
+.mount("#app") 这个方法把刚才创建的应用挂到 id为app的元素上，然后渲染出来
+这个就是组件的运行过程
+```
+
+
+
+## 数据绑定
+
+Vue通过数据绑定是西安了数据与页面分离
+实现了数据驱动页面的效果，也就是 把页面的数据分离出来放到组建的 script 标签中
+通过程序操作数据，并且数据改变时，页面会自动发生改变，拒绝硬编码！
+
+数据绑定分为 定义数据 和 输出数据
+定义数据发生在 scrpit 标签中
+输出数据 使用 Mustache语法（双大括号法）把数据输出到页面
+
+代码写作 {{数据名}}  在页面里渲染出来数据名对应的值
+
+### 定义数据
+
+语法格式如下
+
+```
+<script>
+export default{
+调用方法 setup(),以对象形式返回数据，一个对象的不同元素用逗号分隔
+  setup(){
+    return {
+      数据名：数据值,
+      数据名：数据值,
+      ...
+    }
+  }
+  
+}
+</script>
+```
+
+  为了让代码更简洁，Vue3提供了 setup语法糖 
+使用它可以更方便开发
+
+```
+<script setup>
+var/const/let 数据名 = 数据值
+</script>
+```
+
+### 输出数据
+
+Mustache语法，这种语法相当于在 template 中放入了占位符
+**`{{ 数据名 }}`**
+
+这种语法内部也可以直接写一个表达式，页面会渲染表达式的值
+
+```
+{{"hello"}}->hello
+{{number+1}}
+{{obj.name}}
+{{ok?yes:no}}
+{{'<div></div>'}}-><div></div>
+```
+
+
+
+例子
+
+```
+demo.vue:
+<template>{{ message }}</template>
+<script setup>var message = "数据输出";</script>
+
+main.js:
+import { createApp } from 'vue'
+import App from './components/demo.vue'
+				可以通过切换这个👆测试不同组件
+createApp(App).mount('#app')
+页面渲染：数据输出
+```
 
