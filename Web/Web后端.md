@@ -853,7 +853,7 @@ order by 必须根据select中包含的字段排序
 select结果中如果没有包含字段A，是不能把结果按A排序的
 是这个意思，并没有很特别的地方
 
-```html
+```java
 @Query("""
    select * from user u 
    order by u.id desc
@@ -886,6 +886,10 @@ explain结果中 Extra: Backward index scan 新的倒序算法
 近期考试排在前面
 同一天相同的课程排在一起
 相同课程的教师排在一起
+
+```
+select * 
+```
 
 
 
