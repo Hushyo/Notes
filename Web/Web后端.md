@@ -139,7 +139,7 @@ sql文件下，放的是初始化数据库的代码
 
 
 
-### 开发规范
+### 规范
 
 OR Mapping
 
@@ -152,6 +152,11 @@ OR Mapping
 映射发生在哪里下面一点一点揭晓，现在只需要映射规则，只要名字对，不管什么类型都能映射进去
 
 
+
+查询结果字段为 create_time 会向 createTime属性映射
+如果字段为 createTime 则会直接向同名的 createTime 属性映射
+结果字段有下划线时才会通过映射规则切换一下映射目标
+如果没有下划线则直接向同名属性映射
 
 
 
@@ -537,8 +542,11 @@ key 基于user_id定位2次
 
 ### 设计
 
+#### 普通映射
+
 User一对多Address，Address一对一User
 需求基于address id 查询地址以及对应用户的详细信息
+
 实现1：由于address一对一user因此声明查询字段对应属性名称，创造AddressUserDTO类封装
 
 ```java
@@ -556,6 +564,10 @@ public interface AddressRepository extends CrudRepository<Address, String> {
 
 上述查询结果为 id detail userId name createTime updateTime，想要映射的对象为 AddressUserDTO
 
+
+
+
+
 在继承了CRUD的接口中，自定义查询的方法可以返回任何类型的值，只要你能正确映射
 
 ```
@@ -571,6 +583,10 @@ public class AddressUserDTO {
 
 名字符合映射规则的便会映射进去，组成一个AddressUserDTO类型的对象返回回去！
 
+
+
+
+
 实现2：通过一次查询将结果分别封装在user/address对象中，再封装到一个DTO对象
 这个没办法直接把查询结果映射了，映射只能映射到属性里，不能映射到对象里
 
@@ -580,6 +596,10 @@ public class AddressUserDTO2 {
     private Address address;
 }
 ```
+
+
+
+
 
 #### **RowMapper \<T> 接口** 
 
@@ -769,25 +789,59 @@ findAll((page-1)*pageSize,pageSize)
 第一页 page=1 算出来偏移量=0，那么第一页是 1-pageSize
 第二页 page=2 算出来 偏移量就是pageSize，那么第二页就是pageSize+1 - 2\*pageSize
 
+
+
+ 我们可以用一个接口封装 pageSize 和 pageNumber(页数 )
+
+
+
 #### Pageable接口
 
 Pageable接口 封装 offset/pageSize等分页数据
 注意正确引入 ：springframework.data.domain.Pageable
 
-PageRequest实现类，这个实现类可以直接用
+PageRequest实现类，这个实现类可以直接用,下面用这个实现类里的方法创建 PageRequest实例
 PageRequest.of(int pageNumber,int pageSize) 根据指定的页数以及每页个数，封装计算limit的offset(我们不参与，它自己算)
 
+
+
+我们在使用limit指令分页时，需要两个参数，一个是偏移量offset，另一个是要显示的记录个数 pageSize
+但是我们创建 PageRequest 实例时传入的参数是 想查询的页数 pageNumber 和每页大小 pageSize
+然后它会根据我们传入的欲查询页数 pageNumber 和 pageSize 算出来查询时需要的 offset
+我们在SQL语句里直接调出它算出来的offset就满足了偏移量参数需求，然后页面大小是一致的，不用管
+这就是这个接口的作用
+
+计算公式？ offset = (pageNumber-1)*pageSize
+
+
+
+我们实际使用时
+想查第二页，每页3个
+
 ```
+int pageNumber = 2;
+int pageSize = 3;
+Pageable pageable = PageRequest.of(pageNumber,pageSize);
+findAll(pageable)
+
 @Query("""
    select * from user u 
+   //注意这里用的是 offset属性，因为SQL语句需要的是偏移量而不是页数，后面的pageSize就是pageSize不用变
+   //一定要加上 ： 冒号占位符！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
     limit :#{#pageable.offset},:#{#pageable.pageSize}
    """)
 List<User> findAll(Pageable pageable);
 ```
 
+
+
+： 这个冒号一定不要忘了！！！！这个是必须要的占位符！！！
+
 #{ } 声明SpringEL表达式
 里面的#引用参数，通过对象.属性引用
 SpringEL表达式没有自动提示
+
+pageable .offset 它会调用pageable的getOffset方法，获得 offset属性值，这个值是这个接口根据我们给定的页数和每页大小自己算的
 
 
 
@@ -795,7 +849,9 @@ SpringEL表达式没有自动提示
 
 MySQL order by 语句实现排序
 order by 必须根据select中包含的字段排序
-select中如果没有包含A，是不能通过A排序的 这个意思
+
+select结果中如果没有包含字段A，是不能把结果按A排序的
+是这个意思，并没有很特别的地方
 
 ```html
 @Query("""
@@ -805,6 +861,35 @@ select中如果没有包含A，是不能通过A排序的 这个意思
    """)
 List<User> findByIdDesc(Pageable pageable);
 ```
+
+order by 和 limit 结合使用，MySQL找到 limit 行数据后就会停止排序，不会先排后选，而是边排边选
+但是在 过滤条件where/排序条件orderby 无法命中索引时，不建议查询/排序  
+
+比如我们按 create_time 字段排序，显然没有命中索引，它会全表索引
+如果倒叙排的话更慢，效率极低
+
+
+
+如果我们 order by字段能命中索引，SQL会调用新的倒序算法，效率很高哦
+explain结果中 Extra: Backward index scan 新的倒序算法
+
+
+
+是否命中索引 直接影响查询效率！
+
+
+
+
+
+需求：
+查询出指定学院下，指定日期范围内所有考试
+近期考试排在前面
+同一天相同的课程排在一起
+相同课程的教师排在一起
+
+
+
+
 
 
 
