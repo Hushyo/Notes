@@ -1,3 +1,5 @@
+vue官方文档https://cn.vuejs.org/guide/essentials/application.html
+
 # Vue3安装
 
 ## 安装前置
@@ -160,12 +162,19 @@ VSCODE可以同时运行多个终端的项目
 1. index.html是入口，非常重要，但是里面基本不写东西
    用link引入其他东西，或者把组件挂在里面的元素上
 
-   ![image-20241011135251388](C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241011135251388.png)
+   <img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241011135251388.png" alt="image-20241011135251388" style="zoom:67%;" /> 
 
 2. 项目结构里 路径 src 下可能有一个 style.css  可以删掉
    比年项目创建自带的样式代码影响项目效果
 
 3. 
+
+
+
+## API
+
+Vue 的组件可以按两种不同的风格书写：**选项式 API** 和**组合式 API**
+目前更推荐组合式API
 
 
 
@@ -188,8 +197,11 @@ VSCODE可以同时运行多个终端的项目
    指的是通过JS代码处理组件的数据与业务
    代码在 \<script> 标签中
 
-组件一般放在 src下的 components包下
-App.vue除外，这个一般作为全局组件
+App.vue是全局组件
+把所有东西都写在App.vue里也不是不行，只是后期维护起来可能不太方便
+
+所以我们把组件分块写，放在 components 包里，由App.vue引入使用
+然后把 App.vue 通过main.js 挂在 index.html 里的元素上
 
 
 
@@ -201,22 +213,40 @@ import './assets/main.css'
 这个是样式，可以删掉
 
 import { createApp } from 'vue'
-这个是从 vue 中引入方法 createApp
-
 import App from './App.vue'
-这个是引入 App.vue这个组件并且命名为 App
-命名随意的，引入和命名名字不一样也没问题
-./代表本文件所在的目录
 
 createApp(App).mount('#app')
-调用方法 createApp(App) 传入 App.vue 组件
-效果是创建一个应用（App）
-然后调用 .mount方法
-.mount("#app") 这个方法把刚才创建的应用挂到 id为app的元素上，然后渲染出来
-这个就是组件的运行过程
 ```
 
+- import { createApp } from 'vue'
+  这个是从 vue 中引入方法 createApp
+  导入方法用{ }包括方法名即可，不同方法之间用逗号隔开
 
+- import App from './App.vue'
+  这个是引入 App.vue 这个组件   起别名为 App
+  命名随意的，引入和命名名字不一样也没问题
+
+   ./ 代表本文件所在的目录
+
+- createApp(App).mount('#app')
+  调用方法 createApp(App) 传入 App.vue 组件作为参数
+  效果是创建一个应用实例（App）
+  然后调用 app.mount方法
+  app.mount("#app") 这个方法把刚才创建的应用挂到 id为app 的元素上，然后渲染出来
+  这个就是组件的运行过程
+
+
+
+每个 Vue 应用都是通过 [`createApp`](https://cn.vuejs.org/api/application.html#createapp) 函数创建一个新的 **应用实例** app
+
+function createApp(rootComponent: Component, rootProps?: object): App
+第一个参数是根组件。第二个参数可选，它是要传递给根组件的 props
+根组件可以是内联的，也可以是外部导入的 如 improt App from './App.vue'
+
+app.mount( )将应用实例挂载在一个容器元素中
+参数可以是一个实际的 DOM 元素或一个 CSS 选择器 (使用第一个匹配到的元素)
+对于每个应用实例，`mount()` 仅能调用一次
+但是我们可以创建多个应用实例多次调用啊
 
 ## 数据绑定
 
@@ -291,3 +321,133 @@ createApp(App).mount('#app')
 页面渲染：数据输出
 ```
 
+## 响应式数据绑定
+
+想要实现页面中数据的更新，需要进行响应式数据绑定，也就是将数据定义成响应式数据
+响应式数据发生变化时，页面会重新渲染一遍，有四种函数可以定义响应式数据
+
+1. ref( )
+   用于将数据转化成响应式数据，参数为数据，返回值为转换完成的响应式数据
+
+   语法格式：响应式数据 = ref（数据）
+   如果需要更改数据的值
+   响应式数据.value = 新值
+
+   ```
+   <template>{{ message }}</template>
+   
+   <script setup>
+   
+   import {ref} from 'vue' //引入方法才能用
+   
+   var message = ref("数据输出");
+   setTimeout(()=>{
+       message.value='锲而不舍'
+   },2000)
+   
+   </script>
+   ```
+
+   页面刚开始是 数据输出 过两秒变成 锲而不舍二
+
+2. reactive( )
+   用于创建一个响应式对象或者数组，将普通的对象或数组作为参数传进去，返回响应式的
+   响应式对象或数组 = reactive(普通对象或数组)
+   改值？
+   对象.属性 =新值
+
+   ```
+   <template> {{ obj }} </template> //记得数据名要对
+   
+   <script setup>
+   
+   import {reactive} from 'vue' //记得引入方法
+   
+   var obj = reactive({name:"pang",id:1});
+   setTimeout(()=>{
+       obj.name="Hush"
+   },2000)
+   
+   </script>
+   ```
+
+3. toRef( )
+   将响应式对象中的单个属性转换为响应式数据，返回转换完成的响应式数据，而不是对象
+   响应式数据 = toRef(响应式对象，"属性名")
+
+   ```
+   <template>
+       <div>obj.name的值:{{ obj.name }}</div>
+       <div>message的值: {{ message }}</div>
+   </template>
+   <script setup>
+   import { reactive,toRef } from 'vue';
+   var obj = reactive({name:"pang",id:1});
+   var message = toRef(obj,"name");
+   setTimeout(()=>{
+       message.value="Hush";
+   },3000);
+   
+   </script>
+   ```
+
+   使用 `toRef` 创建的响应式引用和原始对象中的属性不是同一个，但它们是相互关联的。
+   这意味着，当你修改响应式引用的值时，原始对象中的对应属性也会被更新，反之亦然
+
+4. toRefs( )
+   将响应式对象中的所有属性转换为响应式数据
+   所有属性组成的对象 = toRefs(响应式对象)
+   返回一个由响应式数据构成的对象
+   提问，响应式数据如何改值？数据.value!
+
+   ```
+   <template>
+       <div>obj的值:{{ obj }}</div>
+       <div>obj2的值: {{ obj2 }}</div>
+   </template>
+   
+   <script setup>
+   import { reactive,toRefs } from 'vue';
+   var obj = reactive({name:"pang",id:1});
+   var obj2 = toRefs(obj);
+   
+   setTimeout(()=>{
+   
+       obj2.name="Hush";
+       obj2.id="666"
+   	写成上面这个是不会改的！
+       obj2.name.value="Hush";
+       obj2.id.value="666"
+       
+   },3000);
+   
+   </script>
+   ```
+
+响应式数据与非响应式数据的区别？看个例子
+
+```
+<template>
+    <div>obj的值:{{ obj }}</div>
+    <div>obj2的值: {{ obj2 }}</div>
+    <div>obj3:{{ obj3 }}</div>
+</template>
+<script setup>
+import { reactive,toRefs } from 'vue';
+var obj = reactive({name:"pang",id:1});
+var obj2 = toRefs(obj);
+var obj3 = {name:"yu"};
+
+setTimeout(()=>{
+    obj2.name.value="Hush";
+    obj2.id.value="666"
+},1000);
+setTimeout(()=>{
+    obj3.name="hao"
+},2000)
+
+</script>
+```
+
+页面一秒后，响应式数据改变，页面重新渲染
+但是两秒后，非响应式数据改变，页面不变，obj3显示的内容仍然是初始值 yu 而不是 hao
