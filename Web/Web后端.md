@@ -887,13 +887,36 @@ explain结果中 Extra: Backward index scan 新的倒序算法
 同一天相同的课程排在一起
 相同课程的教师排在一起
 
+创建表 invi
+
+
+
+太麻烦了，先不看了	 (´▽`ʃ♡ƪ)
+pagination-ppt
+
 ```
-select * 
+select * from invi i 
+where i.cid = :id and i.date >=:startTime and i.date<=:endTime
+order by i.date,i.time->>"$.startTime",i.course->>"$.courseName",i.course->>"$.teacherName"
 ```
 
 
 
 
+
+
+
+### HikariCP
+
+专注于作 数据库连接池 database connection pool，其他什么都不管
+Hikari 日语，光
+背景想看自己查
+
+数据库不合适或者错误的配置反而会影响执行效率
+
+
+
+Minimum-idle 池中维护的最小空闲连接数
 
 
 

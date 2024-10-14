@@ -451,3 +451,134 @@ setTimeout(()=>{
 
 页面一秒后，响应式数据改变，页面重新渲染
 但是两秒后，非响应式数据改变，页面不变，obj3显示的内容仍然是初始值 yu 而不是 hao
+
+
+
+
+
+## 绑定指令
+
+### 内容渲染指令
+
+
+
+渲染指令跟以后的其他属性指令，不使用指令v-text或者对应的指令的话，直接把数据名放进去，是不会把数据值传过去的
+数据名就变成了单纯的字符串赋给属性 比如 color = "msg" msg  = red 但是最后渲染结果 color=msg 并不会等于 red
+
+
+
+内容渲染指令用于渲染DOM元素的内容
+常见的两个如下
+v-text , v-html
+
+**v-text**
+
+v-text用于渲染 文本内容，即使文本内容中包含HTML标签，浏览器也不会把它当作标签看
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241014214157307.png" alt="image-20241014214157307" style="zoom:50%;" /> 
+
+渲染结果是 \<div>v-text\</div>
+
+注意使用v-text或者 v-html时，声明这个指令的元素内部不允许有文本，不然报错
+\<div v-text="msg">这里面不能有文本 \</div>
+
+
+
+
+
+v-html
+
+这下子会把文本内容里的标签当作标签识别啦
+
+```vue
+<template>
+<div v-html="msg"></div>
+</template>
+
+<script setup>
+var msg = "<div>v-html</div>"
+</script>
+
+页面渲染结果是  v-html
+<div></div>被当作html标签识别了
+```
+
+
+
+### 属性绑定指令
+
+v-bind 灵活使用该指令给目标元素的属性进行动态绑定
+
+v-bind语法如下！
+
+```
+<标签名 v-bind : 属性名 = "数据名" > </标签名>
+```
+
+v-bind 可以省略 直接写一个冒号了事
+
+```
+<标签名 :属性名 = "数据名" > </标签名>
+```
+
+v-bind还支持将属性与字符串拼接表达式绑定，有啥用目前不知道，待补充
+
+```
+<div :id="'list'+index"></div>
+```
+
+
+
+
+
+举例
+
+```
+<template>
+    <p><input type="text" :placeholder="userName"></p>
+    <p><input type="text" :placeholder="passWord"></p>
+</template>
+
+<script setup>
+var userName="username";
+var passWord="password";
+</script>
+```
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241014215109430.png" alt="image-20241014215109430" style="zoom:50%;" /> 
+
+
+
+### 事件绑定指令
+
+给DOM元素绑定事件从而利用事件实现交互效果
+此时用到的指令是 `v-on`
+
+```
+<标签名 v-on: 事件名 = "事件处理器" >  </标签名>
+```
+
+事件名不等于事件句柄，事件句柄去掉前面的on就是事件名了
+如 click , input , keyup 等等
+
+事件处理器可以是 方法名 或者 直接写 javaScript 语句，这里跟用事件句柄是一样的
+
+v-on:事件名 也可以简写为 @事件名
+
+```
+<template>
+    <button @click="showInfo()">v-on</button>
+    // 如果方法没有参数，这个括号可以省略
+    <button @click="showInfo">v-on</button>
+</template>
+
+<script setup>
+var showInfo = ()=>{  alert("v-on") }
+</script>
+```
+
+
+
+### 双向数据绑定
+
+v-model 指令实现双向数据绑定！
