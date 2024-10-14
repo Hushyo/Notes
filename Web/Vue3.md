@@ -582,3 +582,82 @@ var showInfo = ()=>{  alert("v-on") }
 ### 双向数据绑定
 
 v-model 指令实现双向数据绑定！
+使用它可以在 input 、textarea 、和 select 元素上创建 双向数据绑定！
+它会根据使用的元素自动选取对应的属性和事件组合，负责监听用户的输入事件并更新数据
+
+```
+<标签名 v-model="数据名"></标签名>
+```
+
+v-model 内部会为不同的元素绑定不同的属性和事件，具体如下
+
+- textarea 元素和 text 类型的 input 元素
+   **数据名会绑定  value属性 和 input 事件**
+  对于 `input` 类型为 `text` 的元素，`v-model` 会做以下两件事情
+
+  1. 使用 `v-bind:value` 将输入框的当前值与数据属性绑定，即 `:value="msg"`
+
+  2. 使用 `v-on:input` 监听输入框的 `input` 事件，并在该事件发生时更新数据属性，即 `@input="msg = $event.target.value"`
+
+  ```
+  <input v-model="msg" type="text">
+  ```
+
+  实际上会被转换为
+
+  ```
+  <input :value="msg" @input="msg = $event.target.value" type="text">
+  ```
+
+- checkbox 类型的 input 元素 和 radio类型 的 input 元素 会绑定 checked 属性 和 change 事件
+
+- select 元素会绑定 value 属性 和 change 事件 
+
+例子
+
+```vue
+<template>
+<p>输入信息：<input type="text" v-model="message"> </p>
+<p>输入的信息是：{{ message }}</p>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+var message = ref("hello");
+</script>
+```
+
+渲染出一个输入框和一段文字，输入框改变，文字随之改变，因为 message 也声明为响应式数据了，所以可以实时更改
+如果 message 只是一个字符串，那么改了输入框内容后也不会看到文字变化
+因为 此时的  message 没有 .value属性input事件无效，msg接收输入框信息失败
+
+```vue
+<template>
+ <input type="text" v-model="n1"> +  <input v-model="n2"> = {{ n1+n2 }}
+</template>
+
+<script setup>
+import { ref } from 'vue'
+var n1 = ref(1)
+var n2 = ref(2)
+</script>
+```
+
+渲染结果两个框 1 + 2 = 3
+然后改框值，想实现加法，把第一个框改成 198 结果变成了 1983 因为后来它是按字符串加的
+
+此时用到修饰符
+
+为了方便对用户输入的内容处理，v-model 提供了三个修饰符
+
+-  .number 自动将输入值转换为数字类型
+-  .trim 自动过滤用户输入内容首位的空白字符（去掉首尾的空白字符）
+-  .lazy  在change事件而非 input 事件触发时更新数据（不实时更新，确认输入结束后再更改）
+
+那么上述代码 v-model后面加上修饰符，就实现了加法
+
+```vue
+<input type="text" v-model="n1"> +  <input v-model="n2"> = {{ n1+n2 }}
+<input type="text" v-model.number="n1"> +  <input v-model.number="n2"> = {{ n1+n2 }}
+```
+
