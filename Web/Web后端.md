@@ -1676,3 +1676,11 @@ public class example {
 {"code":200,"message":null,"data":{"detail":"地址","id":"1"}}
 ```
 
+
+
+对于业务的各种异常码，可以封装到一个枚举类型里
+
+```
+
+```
+
