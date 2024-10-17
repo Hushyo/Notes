@@ -1678,9 +1678,89 @@ public class example {
 
 
 
+
+
+## 异常码封装
+
 对于业务的各种异常码，可以封装到一个枚举类型里
 
+枚举类好像不能用@Data注解，应该是不能用setter方法，所以只能用getter注解，解释↓
+
+枚举类型在java中是一种特殊的类（所以可以有构造函数），用于表示一组固定的常量，所以不能setter
+里面每个枚举的常量都可以看作是枚举类型的一个实例，也就是每个枚举常量都调用了枚举类型的构造函数
+如果构造函数有参的话，要给参赋值，就跟下面那个枚举类型意义
+
+枚举常量全大写字母，不同常量间用逗号分隔，以分号结尾
+枚举常量默认有修饰符 public static final 
+
+调用枚举常量方式：枚举类型.常量名   如 Code.SUCCESS
+由于Code.SUCCESS是Code的一个实例，当然也能使用Code内部的方法，比如 Code.SUCCESS.getCode()
+
+```
+@Getter
+@RequiredArgsConstructor
+public enum Code {
+    SUCCESS(200,"成功"),
+    BAD_REQUEST(Code.ERROR,"请求错误"),
+    LOGIN_ERROR(Code.ERROR,"用户名或密码错误");
+
+    public static final int ERROR = 400;
+    private final int code;
+    private final String message;
+}
 ```
 
+SUCCESS(200,"成功")就是 public static final Code SUCCESS = new Code(200,"成功");
+
+
+
+## 测试
+
+如何在不启动主函数的情况下测试方法？怎么可能？不启动在主函数怎么启动8080接口
+
+既然是测试，那就要创建在 test下 ，没有http文件夹就自己建
+Idea http测试脚本，在/test/http/下创建 .http 文件，注意别建立成.html文件 命名随意，最好能区分是对谁的测试
+在里面写上
+
+请求类型 请求地址
+
+```
+如 GET http://localhost:8080/api/address
+```
+
+之后这一行代码左边会出现一个三角形▲ 运行符号，点击即可，测试结果会出现在控制台，而不用去浏览器
+注意测试前启动主函数！
+
+
+
+## @RequestBody
+
+使用Post请求时，如何把请求体里的json对象反序列化为Java对象？
+Json数据里并没有信息指明它是由什么对象序列化来的，反序列化时只看属性是否匹配
+
+想要指定转换成哪种对象？使用注解 @RequestBody
+
+```
+@PostMapping（"URL"）
+public ResultVO postAddress(@RequestBody Address address){······}
+将请求体里的json反序列化为Address类型的对象并注入 address里
+```
+
+@RequestBody 修饰类型 表明将请求体里的json反序列化为哪种Java对象
+然后把反序列化后的Java对象注入后面生命的变量里
+
+## HTTP对象注入
+
+Controller方法 支持注入
+HttpServletRequest / HttpSerlvetResponse / @RequestHeader / @RequestAttribute等多种HTTP对象
+
+如果方法里用到了这些HTTP对象，并且方法使用了Controller注解，那么这些对象会自动注入进去，直接用
+
+```
+@GetMapping("inject") //用了这些注解，那么这方法就变成了Controller方法，直接就是注入HTTP对象
+public void inject(HttpServletRequest request,HttpServletResponse response){
+log.debug("{}",request);
+log.debug("{}",response);
+}
 ```
 
