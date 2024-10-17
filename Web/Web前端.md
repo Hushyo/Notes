@@ -3679,47 +3679,122 @@ window.navigator对象可获取用户浏览器一系列信息，如浏览器名�
 # jQuery
 
 轻量，隐式迭代，链式编程，操作行为与HTML文档分离·····
-可通过声明使用网络CDN节点提供的鹅jquery文件而无需在项目中包含jquery文件，减少项目体积
-jQuery 是一个高效、精简并且功能丰富的 JavaScript 工具库。它提供的 API 易于使用且兼容众多浏览器，这让诸如 HTML 文档遍历和操作、事件处理、动画和 Ajax 操作更加简单。目前超过90%的网站都使用了jQuery库，jQuery的宗旨：写的更少，做得更多！
+
+jQuery 是一个高效、精简并且功能丰富的 JavaScript 工具库。
+它提供的 API 易于使用且兼容众多浏览器，这让诸如 HTML 文档遍历和操作、事件处理、动画和 Ajax 操作更加简单。
+目前超过90%的网站都使用了jQuery库
+jQuery的宗旨：写的更少，做得更多！
 
 将jQuery代码置于文档完全加载后执行
 
+
+
+> VUE3不推荐使用jQuery
+
 ## jQuery引入
+
+jQuery必须引入项目里面才能使用 jQuery 的内容
+之前的JS必须引入东西才能用应该是记错了，js代码可以直接用，只有jQuery才需要引入
+
+引入有两种方式，一种是下载jQuery文件到项目里，也就是本地引入
+另一种是 引用网络节点提供的jQuery文件而无需在项目中包含jquery文件，减少项目体积
+
+不管是哪种，都需要通过 \<script src="url">\</script>把它引入
 
 1. 本地引入：将jQuery下载下来然后导入项目中，通过script标签引用
 
+   ```
    <head>
        <script src="jquery-1.9.1.min.js"></script>
-   </head>    
+   </head>
+   ```
 
 2. CDN引入：使用远程CDN资源库在线引入，避免了文件下载
 
+   ```
    <head>
        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-   </head>    
+   </head> 
+   ```
 
 ## jQuery Syntax
 
-所有的选择器都要放在  `$()` 里面（用于说明这是jQuery?）加上双引号
-下面所有东西 用的都是`{}` 写错了，记得时候换成`()` {}是EL表达式的
+**基础语法结构**
+**$( selector ).action( )**
+$表示 jQuery 语句，选择符 selector用于选择HTML元素
+action( )到时候会换成具体的函数，表示执行什么动作
+
+在引入jQuery文件后，全局作用域里会出现两个变量  $ 和 jQuery 
+这两个变量引用的是同一个对象----**jQuery 顶级对象**
+
+方便书写，我们经常用 $ ，其实 jQuery(selector).action()也可以的
+
+例子: $('div').hide() 隐藏页面里所有div元素
 
 
 
-jQuery核心函数： `$( )`
+**jQuery顶级对象相当于一个构造函数**，用于**创建jQuery实例对象而不用使用 new 关键字**
+它的内部会自动进行实例化，然后返回实例化的对象，jQuery对象本质是 jQuery顶级对象对DOM对象包装后产生的对象
 
-在 jQuery 中，`$("selector")` 是一个函数调用，它返回一个 jQuery 对象或者称为 jQuery 集合。
-具体来说，`$("selector")` 会根据提供的选择器 `selector` 来选取匹配的 DOM 元素集合。这个返回的 jQuery 对象包含了所有匹配的 DOM 元素，这些元素可以通过 jQuery 提供的方法进行操作和处理。
-
+jQuery对象其实是一个集合
+`$("selector")` 会根据提供的选择器 `selector` 来选取匹配的 DOM 元素集合
 根据提供的选择器选择所有匹配的DOM元素哦！这些元素变成一个jQuery对象！
 
 
 
-如果选择器中的属性值本身不包含空格或其他特殊字符，是可以不用引号的。这包括了大部分的情况，比如 `name`、`id`、`class` 等常见的属性选择器。
+jQuery对象 跟 DOM 对象 不是一回事
+
+实际开发中会经常遇到 jQuery对象和DOM对象之间进行转换
+DOM对象比jQuery对象更加复杂，DOM对象的一些属性和方法在jQuery对象中没有封装
+用到这些方法或者属性时需要把jQuery对象转换成DOM对象
+
+- jQuery对象转DOM对象，两种实现方式
+  jQuery对象[索引]  或者 jQuery对象.get(索引)
+
+  ```
+  var div1 = $('div')[0];
+  var div2 = $('div').get(0);
+  ```
+
+- DOM对象转jQuery对象
+  $(DOM对象)
+
+  ```
+  var div = document.getElementById('id');
+  var jQueryDiv = $(div);
+  ```
+
+  
+
+如果选择器中的属性值本身不包含空格或其他特殊字符，是可以不用引号的。
+这包括了大部分的情况，比如 `name`、`id`、`class` 等常见的属性选择器。
 
 ```
 let radios = $("input[name=future]");
 let radios = $("input[name='future']");
-都是可以的
+```
+
+
+
+文档就绪函数
+
+为了避免文档在加载完成前就运行了jQuery代码导致潜在的错误，所有的jQuery函数都要写在一个文档就绪函数中
+错误举例：HTML页面未加载完成，但是jQuery却想要调取某个未加载完的HTML元素
+
+文档就绪函数写法如下
+
+```
+$(document).ready(funciton(){
+jQuery函数内容
+})
+```
+
+document本身就是一个DOM对象，准备就绪后执行函数 函数内写的是jQuery函数内容，其实也能写正常的js代码
+
+```
+$(document).ready(funciton(){
+alert('加载完成')
+})
 ```
 
 
