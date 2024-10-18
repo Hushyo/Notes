@@ -116,11 +116,12 @@ idea里添加database视图并添加数据库可以让项目支持对数据源�
 
 基于SpringBoot自动配置策略，引入持久化框架时，自动读取配置中的数据源配置
 如果没有配置数据源则抛出异常无法启动				配置中添加自动创建数据库参数
+
 在Application中 spring下声明 sql.init.mode: always 
 每次启动spring时就会加载一下 resources下的schema.sql文件来初始化数据库
 不声明则不会自动执行sql脚本
 
-为什么加载这个？因为这是默认配置，如果你的sql文件不叫这个，那就加载不动了，所以要按规范命名配置文件
+sql文件名字不能换，如果你的sql文件不叫这个，那就加载不动了，所以要按规范命名配置文件
 
 sql文件下，放的是初始化数据库的代码
 <img src="C:/Users/13480/AppData/Roaming/Typora/typora-user-images/image-20241003160243030.png" alt="image-20241003160243030" style="zoom:50%;" /> 
@@ -128,8 +129,9 @@ sql文件下，放的是初始化数据库的代码
 用反引号 `` 包括表名，防止表名与关键字冲突
 
 最好用 if not exists 因为每次启动都要执行一遍脚本，但我们只需要在第一次执行的时候创建表
-如果表存在就不创建了
-但是这样也存在一些问题，我们在旧表里添加新字段，但是执行脚本时由于旧表存在，并不会更新旧表
+
+如果表存在就不会创建
+这样存在一些问题，我们在旧表里添加新字段，但是执行脚本时由于旧表存在，并不会更新旧表
 脚本进支持判断是否需要创建数据表，如果数据表存在而想改变/添加字段时，只能我们手动更改数据表
 
 对于表中的外键，我们不直接声明外键，而是在外键上建立索引
@@ -286,8 +288,8 @@ T save(S entity) 方法 默认保存全部属性值，值为null时也会保存�
 `CrudRepository` 提供了一组标准的 CRUD 操作，而 `UserRepository` 接口通过继承它，自动获得了这些操作的实现
 
 **@Repository注解**
-Spring 应用启动时，它会扫描带有 `@Repository` 注解的类，并自动将这些类注册为 Spring 应用上下文中的 Bean
-Spring 会管理这些类的生命周期，并且可以通过依赖注入的方式在其他组件中使用它们。
+Spring 应用启动时，它会扫描带有 `@Repository` 注解的类，并自动将这些类注册为 Spring 应用上下文中的 Bean 对象
+Spring 会管理这些对象的生命周期，并且可以通过依赖注入的方式在其他组件中使用它们。
 可以注入 `UserRepository` 并使用它
 
 ```java
@@ -434,10 +436,10 @@ Explain输出包括执行成本/行数/时间/循环次数等相关信息
 
 驱动表：查询时先过滤的表，跟语句书写顺序无关，重申一下，我们写的只是意图
 
-数据表访问方式 Type
+**数据表访问方式 Type**
 Const 基于唯一索引检索
 Eq_ref 连接时基于唯一索引检索
-Ref 基于非唯一索引检索
+Ref 基于非唯一索引检索 (非唯一索引就是 没有设置 unique 的索引)
 Range 基于索引范围检索
 Index 基于全索引检索
 All  全表扫描
@@ -602,6 +604,9 @@ public class AddressUserDTO2 {
 
 
 #### **RowMapper \<T> 接口** 
+
+> 以下两种接口的 T 是返回值的类型，可以是类，也可以是List或其他集合类型，根据自己需要选取，保证返回值跟T一样就行
+> 反正结果集或行会根据自定义的规则映射，映射完方法把自定义的返回值返回给你
 
 1. 现在有了新的接口 **RowMapper \<T> 接口** 
    可以用来自定义行映射规则 T指的是想要映射成的对象
@@ -1521,6 +1526,8 @@ void getUser() {
 
 # SpringMVC
 
+> SpringMVC跟SpringDate没有耦合性，所以创建一个独立的模块
+
 SpringMVC项目创建
 <img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241010224930989.png" alt="image-20241010224930989" style="zoom:50%;" /> 
 右键工作区，选择新建模块
@@ -1716,7 +1723,8 @@ SUCCESS(200,"成功")就是 public static final Code SUCCESS = new Code(200,"成
 
 ## 测试
 
-如何在不启动主函数的情况下测试方法？怎么可能？不启动在主函数怎么启动8080接口
+如何在不启动主函数的情况下测试方法？怎么可能？不启动主函数怎么启动8080接口
+先启动微服务
 
 既然是测试，那就要创建在 test下 ，没有http文件夹就自己建
 Idea http测试脚本，在/test/http/下创建 .http 文件，注意别建立成.html文件 命名随意，最好能区分是对谁的测试
@@ -1730,6 +1738,33 @@ Idea http测试脚本，在/test/http/下创建 .http 文件，注意别建立�
 
 之后这一行代码左边会出现一个三角形▲ 运行符号，点击即可，测试结果会出现在控制台，而不用去浏览器
 注意测试前启动主函数！
+
+
+
+每一个测试最好用 ### 包围，不然一个文件只能测一个请求
+
+```
+###
+GET http://localhost:8080/api/address
+###
+POST http://localhost:8080/api/login
+###
+```
+
+
+
+POST请求怎么测？还要创一个网页用来POST吗？
+当然不行啊！需要显式声明请求类型，以及请求体信息
+
+```
+POST http://localhost:8080/api/login
+Content-Type: application/json
+空一行，这是规定
+{ 这是请求体
+  "account": "Hush",
+  "password": "123456"
+}
+```
 
 
 
@@ -1763,4 +1798,159 @@ log.debug("{}",request);
 log.debug("{}",response);
 }
 ```
+
+
+
+
+
+## MVC实验
+
+项目创建在本章节开头
+创建后 resources 里面三个文件都没用 static templates(模板) application 全可以删了
+自己加一个 application.yml 文件
+
+- 配置 log 日志输出 以及 json 反序列化配置 如忽略空属性
+  log
+
+  ```
+  logging:
+    level:
+      root: warn
+      org:
+        example: debug
+    pattern:
+      console: '%-5level %C.%M[%line] - %msg%n'
+  注意 一层层包的名字 有的文件在 com 里，我的在 org里所以用org 如果在com里就要改成com
+  ```
+
+  json
+
+  ```
+  spring:
+    jackon:
+      default-proprety-inclusion: non-null
+  注意缩进，这个意思是 序列化时忽略空属性
+  ```
+
+  配置完毕
+
+- 在exception包下，自定义枚举类型通用异常业务码。
+
+  ```
+  @Getter //生成 getter Code属性都是 final ，不能setter，所以不用@Data注解
+  @RequiredArgsConstructor //生成final属性构造函数和无参构造函数
+  public enum Code {
+      LOGIN_ERROR(Code.ERROR, "用户名密码错误"),
+      BAD_REQUEST(Code.ERROR, "请求错误"),
+      UNAUTHORIZED(401, "未登录"),
+      TOKEN_EXPIRED(403, "过期请重新登录"),
+      FORBIDDEN(403, "无权限");
+      
+      public static final int ERROR = 400;
+      private final int code;
+      private final String message;
+  }
+  ```
+
+- 在vo包下，创建ResultVO类，统一封装通用响应数据，包括：响应数据/响应空数据/异常业务数据等。  
+
+  ```java
+  @Data
+  @Builder
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public class ResultVO {
+  
+      private int code;//业务码
+      private String message; //异常信息，成功时不需要这个属性
+      private Object data; //返回数据，不知道返回的数据是什么类型，用Object可以接收全部
+  
+      //业务成功则 返回数据和成功码封装成的VO对象
+      //把构造封装起来，对外暴露工具类
+      public static ResultVO success(Object data){
+          return ResultVO.builder()
+                  .data(data)
+                  .code(200)
+                  .build();
+      }
+  
+      public static ResultVO error(Code code){
+      return ResultVO.builder()
+              .code(code.getCode())
+              .message(code.getMessage())
+              .build();
+      }
+      //如果手动传入异常码和异常信息则调用这个
+      public static ResultVO error(int code,String message){
+          return ResultVO.builder()
+                  .code(code)
+                  .message(message)
+                  .build();
+      }
+  
+      private static final ResultVO EMPTY = ResultVO.builder().code(200).build();
+      //用于返回一个不需要数据的VO对象，比如 post 请求成功，并不需要返回数据，只需要知道成功了
+      //每次都创建一个成功对象，虽然里面只塞了一个 200成功码，但是仍然浪费
+      //所以内部封装一个空容器，而不是创建
+      public static ResultVO ok(){
+          return EMPTY;
+      }
+  }
+  ```
+
+- 在dox包下，创建User类，添加id/name/account/password/createTime等属性
+
+  ```
+  @Data
+  @Builder
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public class User {
+      private String id;
+      private String name;
+      private String account;
+      private String password;
+      private LocalDate createTime;
+  }
+  ```
+
+  为什么没有 id createby onlyread等注解？我不知道，可能是不涉及数据库交互
+
+- 在service包下，创建UserService组件，模拟一个包含若干user对象的集合（这个集合是在模拟数据库）
+  获取全部users集合对象业务方法，listUsers()    
+  基于account获取user对象业务方法，getUserByAccount()    
+
+  ```java
+  @Service
+  public class UserService {
+      private static List<User> users = createUserList();
+      //模拟一个数据库，目前只有一条记录
+      private static List<User> createUserList(){
+          User u = User.builder()
+                  .id("1")
+                  .name("Hush")
+                  .account("Hushyo")
+                  .password("123456")
+                  .build();
+          users.add(u);
+          return users;
+      }
+      //对外暴露获取User方法
+      public List<User> listUsers(){
+          return users;
+      }
+      public User getUserByAccount(String account, String password){
+          return users.stream()
+                  .filter(u->u.getAccount().equals(account))
+                  .filter(u -> u.getPassword().equals(account))
+                  .findFirst()
+                  .orElse(null);
+      }
+  }
+  ```
+
+- 在controller包下，创建LoginController控制组件,/api/，添加基本组件声明，注入UserService组件
+  
+
+
 
