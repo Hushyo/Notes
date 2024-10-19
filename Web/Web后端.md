@@ -1770,10 +1770,11 @@ Content-Type: application/json
 
 ## @RequestBody
 
-使用Post请求时，如何把请求体里的json对象反序列化为Java对象？
-Json数据里并没有信息指明它是由什么对象序列化来的，反序列化时只看属性是否匹配
+对于Post请求时，如何把请求体里的 json数据 反序列化为Java对象？
+Json数据里并没有信息指明它是由什么对象序列化来的，默认反序列化时只看属性是否匹配
 
-想要指定转换成哪种对象？使用注解 @RequestBody
+想要指定转换成哪种对象？使用注解 @RequestBody 可以指明将请求体里的json反序列化为哪种Java对象
+然后把反序列化后的Java对象注入后面生命的变量里
 
 ```
 @PostMapping（"URL"）
@@ -1781,8 +1782,7 @@ public ResultVO postAddress(@RequestBody Address address){······}
 将请求体里的json反序列化为Address类型的对象并注入 address里
 ```
 
-@RequestBody 修饰类型 表明将请求体里的json反序列化为哪种Java对象
-然后把反序列化后的Java对象注入后面生命的变量里
+
 
 ## HTTP对象注入
 
@@ -1800,6 +1800,25 @@ log.debug("{}",response);
 ```
 
 
+
+## URL占位符
+
+URL模板模式，支持在请求地址中使用参数，从而实现符合 RESTful风格的请求
+在请求地址里 用大括号 { } 声明这里要传入地址参数
+使用注解 @PathVariable **参数级注解**，注解有 name  属性，声明地址中传入的参数名称
+默认参数名称与方法里的参数名称相同
+
+```
+@GetMapping("address/{aid}")
+public ResultVO getAddress(@PathVariable("aid") int id)
+这个注解表示 id 将传入 请求地址中 aid 的位置
+方法参数名 id 最好跟 aid 一致，这里为了学习故意不一致
+一致的时候，注解可以不用写 name  属性，只用注解时，它会自动传入名叫 aid 的地方，如果没有就报错呗
+public ResultVO getAddress(@PathVariable int aid)
+
+@GetMapping("address/{aid}/{newsId}")
+public ResultVO getNew(@PathVariable int aid, @PathVariable("newId") int nid);
+```
 
 
 
@@ -1950,6 +1969,70 @@ log.debug("{}",response);
   ```
 
 - 在controller包下，创建LoginController控制组件,/api/，添加基本组件声明，注入UserService组件
+  创建处理login路径POST请求方法login()，获取user对象，实现登录校验
+  
+  ```java
+  @Slf4j
+  @RestController //所有方法返回值序列化json字段后返回
+  @RequiredArgsConstructor //构造函数注入组件
+  @RequestMapping("/api/") //声明请求前缀
+  public class LoginController {
+      private final UserService userService;
+      @PostMapping("login")
+      public ResultVO login(@RequestBody User user){
+          User userR = userService.getUserByAccount(user.getAccount(),user.getPassword());
+          if(userR == null){
+              return ResultVO.error(Code.LOGIN_ERROR);
+          }
+          return ResultVO.success(userR);
+      }
+  }
+  ```
+  
+-   在controller包下，创建AdminController控制组件,/api/admin/，添加基本组件声明  
+  创建处理users路径GET请求方法getUsers()方法，获取全部用户信息    
+
+  创建处理users/{account}路径GET请求方法getUser()方法，获取路径参数，调用业务组件查询    
+
+  ```java
+  @Slf4j
+  @RestController
+  @RequestMapping("/api/admin/")
+  @RequiredArgsConstructor//用于注入其他组件
+  public class AdminController {
+  
+      private final UserService userService;
+  
+      @GetMapping("users")
+      public ResultVO getUsers() {
+          return ResultVO.success(userService.listUsers());
+      }
+  
+      @GetMapping("users/{account}")
+      public ResultVO getUser(@PathVariable String account) {
+          return ResultVO.success(userService.getUserByAccount(account));
+      }
+  }
+  ```
+
+- 在test下创建http目录，创建test.http测试脚本，编写请求测试用例
+
+  ```
+  POST http://localhost:8080/api/login
+  Content-Type: application/json
+  
+  {
+    "account": "Hushyo",
+    "password": "123456"
+  }
+  ###
+  GET localhost:8080/api/admin/users
+  ###
+  GET localhost:8080/api/admin/users/Hushyo
+  ###
+  GET localhost:8080/api/admin/users/123
+  ```
+
   
 
 
