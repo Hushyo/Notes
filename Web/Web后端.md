@@ -1137,7 +1137,7 @@ Bean是一种对象，生命周期由Spring容器管理
 
 基于类型注入
 Spring容器会根据注入点类型（注解修饰的类型）查找容器中所有匹配该类型的Bean并注入
-这种基于类型注入的方式不管Bean的名称，只关心其类型
+这种基于类型注入的方式不管Bean对象的名称，只关心其类型
 
 #### 构造函数
 
@@ -1290,10 +1290,29 @@ private UserRepository userRepository;
 
 
 
+
+
+### @PostConstruct
+
+注入依赖组件，执行构造函数组件对象后，回调由它修饰的组件方法
+
+
+
 ### @value
 
 @Value  修饰组件属性，可以基于SpEL表达式注入值（如配置文件中的自定义值等）
 ${ } 引用 application.yml配置中声明的变量
+
+
+
+application.yml
+
+```
+my:
+  secretkey: ABCD
+```
+
+组件里注入
 
 ```
 @Component
@@ -1302,13 +1321,20 @@ public class Example{
 	private String secretkey;
 }
 这个注解会把application.yml里这个值拿过来注入到这个属性里
-application.yml里
-my:
-  secretkey: ABCD
 ```
+
+
 
 避免以硬编码形式放入代码中
 我们可以把一些token/第三方密钥等声明在配置文件里，然后github ignore这个配置文件，达到保密效果
+
+
+
+
+
+@Value不好使怎么办？注意引入的是哪个Value
+import org.springframework.beans.factory.annotation.Value; 我们要用的是这个
+而不是  import lombok.Value;
 
 
 
@@ -2195,7 +2221,7 @@ MD5是不可逆的Hash算法，将 明文密码 转化为哈希值保存在数�
 虽然不同数据经过Hash算法算出的哈希值是唯一的，但是同一个数算出的哈希值是相同的
 
 我们只需要把所有明文都经过Hash算一遍，然后跟数据库里的哈希值一一对比不就行了？暴力枚举
-彩虹表(Rainbow)数据库就可以直接根据哈希值检索出对应的明文
+彩虹表(Rainbow)数据库就可以撞库，直接根据哈希值检索出对应的明文
 
 因此仅用Hash算法保存密码等敏感数据是远远不够的
 
@@ -2203,6 +2229,520 @@ MD5是不可逆的Hash算法，将 明文密码 转化为哈希值保存在数�
 
 ### Salt
 
-盐值
+**盐值**
+
+Hash算法的明文产生唯一的哈希值，我们可以在明文后追加 盐值
+从而使撞库成功获取的值并不是用户的原始密码，即 成功了也是我加完盐值的结果
+
+验证密码时，将用户输入的密码加入盐值后计算Hash值，与数据库中的对比 进行验证。
+
+缺点：这个盐值该怎么设置？
+
+1. 每个用户都有自己的盐值，如何？
+   需要大量空间
+2. 全局统一一个盐值，如何？
+   假如盐值是 abc
+   用户设置密码 1 加完盐值 1abc 计算后放入 数据库
+   不安好心的 多次设置密码
+   设置 2 计算后放入数据库 , 然后撞库，于是发现他的密码加完盐值变成了 2abc
+   设置 3 计算后放入数据库，然后再次撞库，他发现加了盐值的密码是 3abc，于是他猜出了盐值是 abc
+   那么他再次撞库获得用户密码 1abc，他知道盐值是abc，那不就得到了用户的密码是1吗
+
+还是不够安全！
+
+### Security
+
+Spring提供了一套安全框架，用于处理 加密/解密 数据信息
+这套框架提供了包括 对称/非对称加密，不同的Hash算法等一系列实现
+
+引入依赖
+
+```
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-crypto</artifactId>
+</dependency>
+```
 
 
+
+### PasswordEncoder
+
+PasswordEncoder接口
+String encode(CharSequence rawPassword) 方法 用于对密码进行编码，返回编码结果
+boolean matches(CharSequence rawPassword, String encodedPassword) 验证原密码与编码密码是否相同
+
+这个接口有两个实现类
+Pbkdf2PasswordEncoder类，Pbkdf2算法
+BCryptPasswordEncoder类，Bcryot算法
+自动生成随机盐值，并且附在结果，避免盐值单独保存
+盐值：128位随机二进制数, 16bytes,base64,24chars 特殊算法转为22chars
+
+均为针对并发破解的算法，可以极大增加破解的时间复杂度，但是密码对比也需要更多资源
+
+测试使用
+
+1. 把passWordEncoder组件注入容器
+
+   ```
+   @Configuration
+   public class PasswordEncoderConfig {
+       @Bean
+       public PasswordEncoder getPasswordEncoder() {
+           return new BCryptPasswordEncoder();
+       }
+       //注册为bean对象，需要passwordEncoder类型的对象时，自动把这个new的 BC实例注入进去
+   }
+   ```
+
+2. 测试
+   String encode(CharSequence rawPassword) 用于对密码进行编码，返回编码结果
+
+   ```
+   @Slf4j
+   @SpringBootTest
+   public class PasswordEncoderTest {
+   
+       @Autowired//把刚才注册的bean对象注入进去喽
+       private PasswordEncoder encoder;
+   
+       @Test
+       public void test_password(){
+           String pwd = "123456";
+           
+           log.debug(encoder.encode(pwd));
+           //$2a$10$hLcfvXuAFT9R4M8TkMBuWeeciJW/5bmbtujE.pTGcc./UQqkuQnKi
+           
+           log.debug(encoder.encode(pwd));
+           //$2a$10$8stYnVbowAnLjJUB94ydX.H9ybMgbbseeVO71xGUfqV74cnRYr8S6
+           
+           String result = encoder.encode(pwd);
+           
+           log.debug("{}",encoder.matches("1234",result));
+           log.debug("{}",encoder.matches("123456",result));
+           
+       }
+   }
+   ```
+
+   这个加密算法，就算明文相同，由于盐值不同，编码后的结果也不一样，上面也能看出来
+   第一次 encode 和 第二次 encode 值根本不一样，其实result跟他俩都不一样
+
+   boolean matches(CharSequence rawPassword, String encodedPassword) 验证原密码与编码密码是否相同
+   第一个参数输入 这次要验证的密码， 第二个参数 输入之前编码过的密码
+
+   BCryptPasswordEncoder的 matches 方法会提取出 encodedPassword 中的盐值
+   然后把盐值加到 rawPassword上 再进行hash运算
+   如果 密码相同，那么加上相同盐值后 经过hash计算后的结果应该是一致的，如果一致，则返回true
+
+   encodedPassword 是encode后的结果，matchs方法会提取这个结果中的盐值，加在待验证密码后面哈希一下，看结果是否相同
+
+   
+
+现在用户实体DO类设置有了新内容
+
+```
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class User {
+    private String account;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
+}
+```
+
+ @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+这个注解使得序列化时忽略此属性，敏感数据都不该被看到的
+
+比如请求最后返回一个 User对象，然后根据注解，是要序列化后返给浏览器渲染，但是这样的话，这个字段就不会被序列化
+
+
+
+模拟环境测试
+
+```
+//模拟一个已经存在的用户
+public User01 getUser01(String userName){
+    return "pang".equals(userName)?
+            User01.builder()
+                    .userName("pang")
+                    .password("$2a$10$8stYnVbowAnLjJUB94ydX.H9ybMgbbseeVO71xGUfqV74cnRYr8S6")
+                    .build() : null;
+}
+```
+
+假设数据库里已经存在了 用户名 pang 的用户，数据库里存有编码后的密码
+当来新用户时，用用户名跟数据库里的用户名匹配，匹配上便拿到数据库里存的user
+
+```
+@PostMapping("login1")
+public ResultVO login1(@RequestBody User01 user01){//来了一个登录，先把请求体里的 json 转化为 user对象
+    //根据用户名查询这个对象是否存在
+    User01 u = userService.getUser01(user01.getUserName());
+    //存在 则拿到数据库中的 user对象，不存在则 u = null;
+    //还有一种情况，用户存在，但是传过来的密码跟数据库里的不一样
+    if(u == null || !passwordEncoder.matches(user01.getPassword(),u.getPassword())){
+        log.debug("登陆失败");
+        return ResultVO.error(Code.LOGIN_ERROR);
+    }
+    log.debug("登陆成功");
+    return ResultVO.success(u);
+}
+```
+
+提交请求测试
+
+```
+POST http://localhost:8080/api/login1
+Content-Type: application/json
+
+{
+  "userName": "pang",
+  "password": "123456"
+}
+---
+{
+  "code": 200,
+  "data": {
+    "userName": "pang"
+  }
+}
+成功，可见 User 对象在序列化时 忽略了password属性
+```
+
+```
+POST http://localhost:8080/api/login1
+Content-Type: application/json
+
+{
+  "userName": "pang",
+  "password": "12345"
+}
+---
+{
+  "code": 400,
+  "message": "用户名密码错误"
+}
+```
+
+
+
+
+
+## Token
+
+**令牌**
+
+原Web服务，用户登陆后在HttpSession里保存用户信息，通过过滤器实现对指定路径请求的拦截过滤
+通过HttpSession中信息实现权鉴
+RESTful设计思想：服务器不再保存用户的登录状态（也就是没有HttpSession了）
+
+用户登陆后 将用户身份/权限信息等加密封装在 Token 中
+将token信息通过 http(header) 返给客户端
+客户端每次发出需要 身份/权限 的请求，都需要在header中携带 token
+服务器端拦截请求从 token 中解密出信息权鉴
+
+> 比如一打开浏览器，在某个网站登录后，进入其他网站后直接进入登陆后状态
+> 如果用户信息在服务器端，那么不可能实现这样的，这些网站总不能用同一个服务器吧
+> 这就是 用户带 token 的优点 ( 大概意思)
+
+Token设计理念如何实现？
+
+- JWT 规范
+- 自定义
+
+### JWT
+
+JWT，一种基于开放标准，适用于分布式单点登录权限验证的解决方案
+
+1. header信息，用于放  类型/算法
+2. payload信息，放 无加密的请求都希望带有的数据 （比如 id）
+3. signature信息 放置基于指定 算法/私钥 用 header/payload数据计算的签名
+4. base64编码 header/payload数据，拼接 signature 产生 token
+5. 请求时，根据header/payload/算法/私钥 重新计算签名
+   如果 header/payload数据被篡改，那么签名将不匹配
+
+header/payload 通过算法/密钥算出一个 signature
+然后 header/payload再经过 base64编码后跟 signature拼接成 token
+
+
+
+token中，header和payload的信息仅基于base64编码，并没有加密
+所以 可以直接解码出 header 和 payload 的数据
+这两个数据可见，但是一旦更改就会token中的签名不匹配，所以是不能篡改的（不是禁止修改，而是改完就用不了，所以能看不能改）
+正因如此，header/payload中不应该放用户的敏感信息
+
+
+
+引入JWT
+
+```java
+<dependency>
+    <groupId>com.auth0</groupId>
+    <artifactId>java-jwt</artifactId>
+    <version>4.4.0</version>
+</dependency>
+```
+
+
+
+JWT是 Json Web Token 的缩写
+Token怎么创建需要我们自己写
+具体用哪个加密算法也是我们自己选
+
+
+
+
+
+定义一个JWT组件，用于处理JWT相关业务
+
+```java
+@Component
+public class JWTComponent {
+    @Value("${my.secretkey}")//从配置文件中拿密钥，注入给下面的变量
+    private String secretkey;
+    private Algorithm algorithm;
+    //Algorithm 类是一个抽象类，它定义了JWT各种签名算法的通用接口
+    @PostConstruct
+    private void init() {
+        algorithm = Algorithm.HMAC256(secretkey); //选择一种签名算法
+    }
+}
+```
+
+@PostConstruct 该注解使得 JWTComponent 对象实例化完成时 调用下面的方法 init()
+
+Java JWT 库中，**Algorithm** 是一个抽象类
+它定义了 JWT 签名算法的接口，提供了多种算法实现这个类
+包括 HMAC256、HMAC384 等。
+
+`algorithm = Algorithm.HMAC256(secretkey);`
+这是一个静态方法，返回一个使用 HMAC 算法和 SHA-256 哈希函数的 Algorithm 实例
+这行代码创建了一个 `Algorithm` 类的具体实例，这个实例使用 HMAC 算法和 SHA-256 哈希函数
+`secretkey` 是一个字符串，用作 HMAC 算法的密钥。在 HMAC 算法中，密钥是生成和验证签名的关键
+
+
+
+
+
+核心 1 密钥
+核心 2 用于加密的算法 algorithm
+
+
+
+
+
+在JWT组件里面自己写加密和解密的方法
+
+### encode
+
+```java
+public String encode(Map<String,Object> map){
+    LocalDateTime time = LocalDateTime.now().plusDays(1);
+
+    return JWT.create()
+            .withPayload(map)
+            .withIssuedAt(new Date())
+            .withExpiresAt(Date.from(time.atZone(ZoneId.systemDefault()).toInstant()))
+            .sign(algorithm);
+}
+```
+
+1. `LocalDateTime time = LocalDateTime.now().plusDays(1);`
+   这行代码创建了一个 `LocalDateTime` 实例，表示当前时间加上一天。
+   这个时间将被用来设置 JWT 的过期时间。
+
+2. `JWT.create()`
+   这是一个静态方法，用于创建一个新的 JWT 构建器实例。
+   这个实例提供了一个链式调用的接口，用于设置 JWT 的不同部分。
+
+3. `.withPayload(map)`
+   这个方法接受一个 `Map<String, Object>` 参数，并将其作为 JWT 的 payload
+   这里传入任何对象都行，作为payload，这里传入了一个 map
+
+
+   payload是 JWT 的一部分，可以包含任意数量的 **claims**
+   `map` 包含了要包含在 JWT 中的信息。
+
+4. `.withIssuedAt(new Date())`
+   这个方法设置 JWT 的 `iat` 声明，它表示 JWT 被签发的时间。
+   这里使用 `new Date()` 获取当前时间。
+
+5. `.withExpiresAt(Date.from(time.atZone(ZoneId.systemDefault()).toInstant()))`
+   这个方法设置 JWT 的 `exp` 声明，它表示 JWT 的过期时间。
+
+   这里使用前面计算的 `time` 变量，将其转换为 `Date` 对象
+   `time.atZone(ZoneId.systemDefault()).toInstant()`
+   将 `LocalDateTime` 转换为系统默认时区的 `ZonedDateTime`，然后转换为 `Instant`，最后转换为 `Date`。
+
+6. `.sign(algorithm)`
+   这个方法对 JWT 进行签名。
+   它接受一个 `Algorithm` 实例作为参数，这个实例定义了用于签名的算法。
+   使用 algorithm 里的算法对JWT进行签名 并且返回一个签名后的 JWT 字符串
+
+   
+   
+
+于是token创建完成
+我们先创建了 JWT 的框架，然后往里面填  payload， 签发时间，过期时间，以及签名
+最后返回token字符串
+
+### decode
+
+```
+public DecodedJWT decode(String token){
+        try{
+            return JWT.require(algorithm).build().verify(token);
+        }catch(TokenExpiredException | SignatureVerificationException e){
+            if(e instanceof SignatureVerificationException){
+                throw myException.builder().code(Code.FORBIDDEN).build();
+            }
+            throw myException.builder().code(Code.TOKEN_EXPIRED).build();
+        }
+    }
+```
+
+使用 Auth0 的 Java JWT 库来验证和解码一个 JWT，验证成功会把解码的JWT返回去
+
+1. `public DecodedJWT decode(String token)`
+   接受一个 `String` 类型的参数 `token`，这个参数是要被解码和验证的 JWT 字符串。
+   方法返回一个 `DecodedJWT` 对象，该对象代表了解码后的 JWT。
+   
+3. `JWT.require(algorithm).build().verify(token)`
+   
+   - `JWT.require(algorithm)`：
+     静态方法，用于创建一个新的 JWT 验证器（Verifier）实例，并指定用于验证签名的算法。
+     这里的 `algorithm` 是之前在 `JWTComponent` 类中初始化的用于签名的算法
+   - `.build()`：这个方法没有接受任何参数，它用于构建和配置验证器实例
+   - `.verify(token)`：这个方法接受一个 JWT 字符串作为参数，并验证其签名。
+     如果签名验证成功，它将返回一个 `DecodedJWT` 对象，该对象包含了 JWT 的所有信息，包括头部、payload和签名。
+   
+   即 利用 algorithm 算法 对 token 进行验证，成功则返回 `DecodedJWT` 对象
+   
+   如果验证失败，则抛出异常。验证失败分为两种情况
+   一种是 JWT 过期，另一种是 JWT 签名不匹配
+   
+4. `catch(TokenExpiredException | SignatureVerificationException e)`
+   这个 catch 语句捕获两种类型的异常：
+   
+   - `TokenExpiredException`：当 JWT 已经过期时，会抛出这个异常。
+   - `SignatureVerificationException`：当 JWT 的签名验证失败时，会抛出这个异常。
+   
+   用于捕获这两种异常
+   
+5. `if(e instanceof SignatureVerificationException){...}`
+   这是一个 if 语句，用于检查捕获的异常是否是 `SignatureVerificationException` 类型的实例。
+   如果是，它将抛出一个自定义异常，表示签名验证失败。
+   
+6. `throw myException.builder().code(Code.FORBIDDEN).build();`
+   这行代码使用一个假设存在的 `myException` 构建器来创建并抛出一个自定义异常。
+   这个异常表示操作被禁止，通常用于表示权限不足或签名验证失败的情况。
+   
+7. `throw myException.builder().code(Code.TOKEN_EXPIRED).build();`
+   如果捕获的异常是 `TokenExpiredException`，这行代码将抛出另一个自定义异常，表示 JWT 已经过期。
+
+
+
+## Jackson
+
+按约定，token放在 header里，但是怎么拿到 header对象呢？
+SpringMVC默认基于 Jackson 实现序列化/反序列化
+自动注入Jackson ObjectMapper映射对象 到容器
+
+String writeValueAsString(T payload) 将对象序列化为 json 字符串
+T readValue (String content, Class c) 将 json 字符串反序列化为指定类型对象
+
+以上两者是 ObjectMapper 对象的两个方法，想用这个对象时自动注入
+
+```
+@Autowired
+private ObjectMapper objectMapper;
+```
+
+
+
+```
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Test
+    public void test_mapper(){
+        User u = User.builder()
+                .name("pang")
+                .password("123456")
+                .build();
+                
+        try {
+            String json = objectMapper.writeValueAsString(u);
+            log.debug(json);
+            User u2 = objectMapper.readValue(json, User.class);
+            log.debug(u2.getName());
+            log.debug(u2.getPassword());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+{"name":"pang","password":"123456"}  对象序列化为json字符串
+ pang    json字符串反序列化为User对象成功
+ 123456
+```
+
+
+
+但并不是 可以反序列化为所有类型的对象
+比如有些对象 List\<E>,Map\<E,E>
+无法反序列化为带有泛型的类型，因为他不知道到底要反序列化成什么东西
+他只知道外面是个 Map，但是不知道内部是什么
+
+```
+		已经创建了一个 User 对象 u
+		Map<String ,User> map=Map.of("user",u);
+        try {
+            String json = objectMapper.writeValueAsString(map);
+            log.debug(json);
+            Map<String ,User> reMap = objectMapper.readValue(json, Map.class);
+            reMap.forEach((k,v)->{
+                log.debug(k);
+                log.debug(v.toString());
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        运行失败
+```
+
+
+
+于是
+
+### TypeReference\<T>
+
+TypeReference\<T>抽象类，通过创建子类，把泛型具体化
+可通过创建匿名内部类实现
+
+```
+        Map<String ,User> map=Map.of("user",u);
+        try {
+            String json = objectMapper.writeValueAsString(map);
+            log.debug(json);
+            Map<String ,User> reMap = 
+							objectMapper.readValue(json, new TypeReference< Map<String,User> >(){});
+            reMap.forEach((k,v)->{
+                log.debug(k);
+                log.debug(v.toString());
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+```
+
+抽象类是不能new的，这里new的其实是匿名内部类对象
+
+
+
+## Encryption Algorithm 
+
+加密/解密算法 适合敏感数据的加密传输
+
+这部分有兴趣就了解
