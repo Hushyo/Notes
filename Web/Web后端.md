@@ -1524,7 +1524,11 @@ void getUser() {
 
 
 
-# SpringMVC
+# SpringMVC-1
+
+MVC 第一部分，基础
+
+
 
 > SpringMVC跟SpringDate没有耦合性，所以创建一个独立的模块
 
@@ -1570,24 +1574,6 @@ REST规范要求 请求中包含状态，而不是让服务器保存状态
 服务器不再使用HTTP session维护(保存)客户端的状态
 RESTful是一种鞥个而不是标准
 默认浏览器仅能发送 GET/POST请求。因此基于浏览器的请求需要通过JS完成
-
-## Github RESTful API
-
-- GET
-
-  获取全部仓库下/指定用户/指定仓库/全部议题下/指定议题内容
-  /repos/{:owner}/{:repo}/issues/{:number}
-
-  获取全部仓库下/指定用户/指定仓库/全部议题下/指定议题/全部评论
-  /repos/{:owner}/{:repo}/issues/{:number}/comments
-
-- POST
-
-- PATCH
-
-- DELETE
-
-
 
 ## Jackson
 
@@ -1811,7 +1797,7 @@ URL模板模式，支持在请求地址中使用参数，从而实现符合 REST
 ```
 @GetMapping("address/{aid}")
 public ResultVO getAddress(@PathVariable("aid") int id)
-这个注解表示 id 将传入 请求地址中 aid 的位置
+这个注解表示修饰的参数 id 将传入 请求地址中 aid 的位置
 方法参数名 id 最好跟 aid 一致，这里为了学习故意不一致
 一致的时候，注解可以不用写 name  属性，只用注解时，它会自动传入名叫 aid 的地方，如果没有就报错呗
 public ResultVO getAddress(@PathVariable int aid)
@@ -1819,6 +1805,31 @@ public ResultVO getAddress(@PathVariable int aid)
 @GetMapping("address/{aid}/{newsId}")
 public ResultVO getNew(@PathVariable int aid, @PathVariable("newId") int nid);
 ```
+
+使用了 {  }  占位符后，这里必须传入值，不能为空，否则抛出异常
+那么怎么实现 a/b/c/{d} d处可以要参数，可以不要参数  即  可选参数？
+
+把多个路径映射到同一个Controller方法里就行了
+@GetMapping("a/b/c/","a/b/c/{d})
+
+增加一个无参的路径处理，只要路径不冲突，一个Controller可以处理多个路径
+解决可选参数问题
+
+
+
+或者使用@PathVariable注解参数，声明路径参数为可选
+但路径参数为基本数据类型时，需要使用它们对应的包装类
+建议使用Optional容器，更简洁
+
+```
+public ResultVO getAddressPage(@PathVariable(required = false) Integer number)
+```
+
+
+
+
+
+
 
 
 
@@ -2035,5 +2046,163 @@ public ResultVO getNew(@PathVariable int aid, @PathVariable("newId") int nid);
 
   
 
+# SpringMVC-2
+
+MVC第二部分，拓展
+
+
+
+## 异常
+
+应用可能产生异常，错误
+
+可以显式处理的业务错误（用户不存在啊，密码不匹配啊） 统一由VO处理
+处理不了的、需要显式捕获处理的受检异常，需要转抛为 自定义非受检异常
+
+无法在代码中直接捕获处理的异常由SpringMVC全局异常处理
+
+### 自定义非受检异常
+
+在Java中，非受检异常（Unchecked Exception）是指那些继承自`RuntimeException`的异常
+这些异常在编译时不需要被捕获或声明抛出，通常用于表示编程错误
+所以想要自定义一个非受检异常，只需要
+
+1. 创建一个新的类继承自`RuntimeException`
+2. 提供构造函数，至少应该有一个无参构造函数和一个 接收错误消息字符串 的构造函数
+
+```java
+@EqualsAndHashCode(callSuper = true) 这个有啥用目前不知道，知道了再把这里改一下
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class myException extends RuntimeException{
+    private String msg;
+    private int codeN;
+    private Code code;//方便直接用封装码
+}
+这就是一个自定义的非受检异常
+```
+
+
+
+### Handling Excepitons
+
+@ControllerAdvice 注解类，用于定义一个**全局异常处理**和数据绑定配置的组件，可以处理来自所有Controller组件的异常
+全局异常处理：可以捕获整个应用程序中抛出的异常，并对它们进行处理，实现在整个应用程序范围内统一处理异常的目标
+
+@RestControllerAdvice 注解类，整合了@Controller和@ResponseBody，``该类返回的都是json数据?``	
+异常处理方法的返回值将自动转换为响应体
+
+@ExceptionHandler 用于修饰 声明在ControllerAdvice类中的处理方法，处理Spring容器捕获的指定异常（全局异常）
+@ResponseStatus 声明返回指定的HTTP状态码
+
+
+
+```
+@Slf4j
+@RestControllerAdvice			//表示这个类用于处理所有来自Controller方法的异常
+public class ExceptionController {
+ 	//需要说明异常处理方法具体处理哪种异常
+    @ExceptionHandler(myException.class)
+    //这个方法就用于处理myException这种异常
+    public ResultVO handlerValidException(myException e) {
+    
+        if(e.getCode()!=null) {
+        //Code属性用来区分是通用的异常还是自定义的异常，自定义的异常里面大概率有Code，而通用的没有
+            return ResultVO.error(e.getCode());
+        }
+        return ResultVO.error(e.getCodeN(),e.getMessage());
+    }
+    
+    @ExceptionHandler(Exception.class) 
+	//兜底的异常处理，前面的方法都处理不了了，会用这个方法处理异常 
+	//因为Exception是所有异常的超类，所以它可以接收所有的异常，兜底处理
+    public ResultVO exceptionHandler(Exception e) {
+        return ResultVO.error(Code.ERROR,e.getMessage());
+        //没办法处理了，返回业务码ERROR，信息就用异常e里的信息
+    }
+}
+```
+
+
+
+
+
+转抛示例
+假如我的业务里定义了这么个阅读文档方法
+
+```java
+public void readFile(){
+    try{
+        Files.readString(Path.of("A:/aa.txt"));
+    }
+    catch(IOException e){
+        throw new myException().builder()
+                .codeN(500)
+                .message(" 读取文件失败"+e.getMessage())
+                .build();
+    }
+}
+```
+
+与外界互交可能失败，失败时抛出受检异常，我们必须显式捕获受检异常
+这个方法肯定失败，哪有路径 A开头的文件？我们捕获受检异常后 catch里便是处理的内容
+只要catch里面写了东西，就算我们处理了受检异常，我们怎么处理的？我们转手抛出了一个非受检异常
+
+非受检异常不会影响应用进行，随便抛。
+那么谁来处理？我们抛出了一个 myException 类型的异常，那么进入SpringMVC容器里，由我们刚才定义的
+处理全局异常的类来处理，处理方法是返回一个VO，VO封装checked异常的信息和异常码
+由于我们的类用了@RestControllerAdvice注解，返回的VO最终会变成json数据给前端
+
+```java
+{
+  "code": 500,
+  "message": " 读取文件失败A:\\aa.txt"
+}
+```
+
+
+
+
+
+## Security
+
+与安全相关，比如密码加密。
+
+### Hash算法 
+
+hash算法是一种签名算法
+
+> 签名算法不可逆，无法转换回源数据
+
+- 唯一性：数据通过hash算法计算出来的hash值是唯一的
+- 压缩性：任意长度的数据经过hash算法后算出的MD5值，长度是固定的（128位二进制，32位十六进制）
+  不管源数据是只有一位还是一百位，计算后的MD5值都是那么个长度
+- 不可逆：签名算法共有的，无法从结果复原出源数据
+- 抗修改：对数据的任何改动，hash值完全不同，哪怕只是加了个空格
+- 容易计算：计算hash值资源占用低
+- 强抗碰撞：伪造数据非常困难
+
+Hash算法无法复原源数据，所以是 **签名算法**  而不是 **加密/解密 算法**
+
+该算法适合验证数据的正确性，拿数据再经过一次算法，然后跟之前的对比，从而看出数据的正确性
+
+----
+
+但是这就完了吗？
+MD5是不可逆的Hash算法，将 明文密码 转化为哈希值保存在数据库
+虽然不同数据经过Hash算法算出的哈希值是唯一的，但是同一个数算出的哈希值是相同的
+
+我们只需要把所有明文都经过Hash算一遍，然后跟数据库里的哈希值一一对比不就行了？暴力枚举
+彩虹表(Rainbow)数据库就可以直接根据哈希值检索出对应的明文
+
+因此仅用Hash算法保存密码等敏感数据是远远不够的
+
+
+
+### Salt
+
+盐值
 
 

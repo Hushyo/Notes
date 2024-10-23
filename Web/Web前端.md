@@ -3691,15 +3691,17 @@ jQuery的宗旨：写的更少，做得更多！
 
 > VUE3不推荐使用jQuery
 
+
+
 ## jQuery引入
 
-jQuery必须引入项目里面才能使用 jQuery 的内容
-之前的JS必须引入东西才能用应该是记错了，js代码可以直接用，只有jQuery才需要引入
+- jQuery必须引入项目里面才能使用 jQuery 的内容
+  之前的JS必须引入东西才能用应该是记错了，js代码可以直接用，只有jQuery才需要引入
 
-引入有两种方式，一种是下载jQuery文件到项目里，也就是本地引入
-另一种是 引用网络节点提供的jQuery文件而无需在项目中包含jquery文件，减少项目体积
+- 引入有两种方式，一种是下载jQuery文件到项目里，也就是本地引入
+  另一种是 引用网络节点提供的jQuery文件而无需在项目中包含jquery文件，减少项目体积
 
-不管是哪种，都需要通过 \<script src="url">\</script>把它引入
+- 不管是哪种，都需要通过 \<script src="url">  \</script>把它引入
 
 1. 本地引入：将jQuery下载下来然后导入项目中，通过script标签引用
 
@@ -3717,17 +3719,19 @@ jQuery必须引入项目里面才能使用 jQuery 的内容
    </head> 
    ```
 
+
+
 ## jQuery Syntax
 
-**基础语法结构**
-**$( selector ).action( )**
-$表示 jQuery 语句，选择符 selector用于选择HTML元素
-action( )到时候会换成具体的函数，表示执行什么动作
+- **基础语法结构**
+  **$( selector ).action( )**
+  $表示 jQuery 语句，选择符 selector用于选择HTML元素
+  action( )到时候会换成具体的函数，表示执行什么动作
 
-在引入jQuery文件后，全局作用域里会出现两个变量  $ 和 jQuery 
-这两个变量引用的是同一个对象----**jQuery 顶级对象**
+- 在引入jQuery文件后，全局作用域里会出现两个变量  $ 和 jQuery 
+  这两个变量引用的是同一个对象----**jQuery 顶级对象**
 
-方便书写，我们经常用 $ ，其实 jQuery(selector).action()也可以的
+- 方便书写，我们经常用 $ ，其实 jQuery(selector).action()也可以的
 
 例子: $('div').hide() 隐藏页面里所有div元素
 
@@ -3776,7 +3780,7 @@ let radios = $("input[name='future']");
 
 
 
-文档就绪函数
+**文档就绪函数**
 
 为了避免文档在加载完成前就运行了jQuery代码导致潜在的错误，所有的jQuery函数都要写在一个文档就绪函数中
 错误举例：HTML页面未加载完成，但是jQuery却想要调取某个未加载完的HTML元素
