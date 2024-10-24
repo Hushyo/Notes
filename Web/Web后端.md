@@ -3164,9 +3164,9 @@ http://localhost:8080/v3/api-docs/
 - @Operation
   修饰Controller方法
   属性
-  Summary 接口显示信息
-  Description 详细描述
-  Parameters 描述输入参数注解数组
+  summary 接口显示信息
+  description 详细描述
+  parameters 描述输入参数注解数组
   Responses 描述响应注解数组
 
 - @Parameters
