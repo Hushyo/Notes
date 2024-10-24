@@ -2442,6 +2442,102 @@ Content-Type: application/json
 
 
 
+### 越权
+
+越权访问。攻击者执行未经授权的访问行为
+分为 垂直越权 和 水平越权 两种
+
+
+
+水平越权：看到了其他同级用户的数据
+
+
+
+#### 垂直越权
+
+攻击者实现更高权限的操作。
+掌握页面高级权限路由地址后通过浏览器直接访问
+掌握后端高级权限请求接口后越过界面等限制直接发送数据请求
+
+最简单的防法是用 拦截器
+分离 请求权限值 和 视图渲染权限值
+前端验证用户的视图路由权限，攻击者即使获取视图组件，也就是可以看到后台长什么样的
+由于没有数据请求权限 ，所以无法看到内容，也无法提交数据请求。可能看见一些按钮，但是按了没有任何效果
+因为数据都在数据库里，没有权限，无法拉取数据，看不到
+
+将 实际请求权限值放到token里并加密，使攻击者无法伪造权限操作
+
+#### 水平越权
+
+攻击者实现针对其他相同权限用户的越权操作
+修改他人密码，获取他人数据等
+
+怎么防止？
+
+- 所有身份操作，在数据库SQL层面添加校验（where语句确认权限）
+- 用户身份（ID等）从token解密获取，而非用户提供
+
+```
+@Modifying
+@Query("update usertest u set u.password=:password where u.id = :uid")
+public ResultVO updatePassword(String password, String uid);
+这里的id从 token中获得，因此用户只能更新自己的数据
+```
+
+#### **Token Encryption**
+
+默认JWT规范生成的token虽然不可篡改，但是可读
+这存在 泄露用户ID/角色权限等 安全隐患
+比如 user返回去以明文形式渲染
+因此可以通过对称加密算法(PBKDF2)加密，自定义生成token，从而使客户端无法读取任何信息
+
+JWT token第二部分为  base64编码的payload信息，可以解读出来明文
+因此可以针对payload信息混淆，把他变成不可读状态
+
+1. 混淆加密 JSON 后赋给JWT payload
+2. 混淆加密 base64编码后的 payload
+
+在token payload 指定位置添加/移除字符 实现混淆base64编码
+
+```
+private final int POS=37;
+private String encodePos(String s){
+    return new StringBuilder(s).insert(POS,"Q").toString();
+}
+private String decodePos(String s){
+    return new StringBuilder(s).deleteCharAt(POS).toString();
+}
+
+
+public String encode(Map<String,Object> map){
+        LocalDateTime time = LocalDateTime.now().plusDays(1);
+
+        var str= JWT.create()
+                .withPayload(map)
+                .withIssuedAt(new Date())
+                .withExpiresAt(Date.from(time.atZone(ZoneId.systemDefault()).toInstant()))
+                .sign(algorithm);
+                
+        return encodePos(str);
+    }
+    
+  public DecodedJWT decode(String token){
+        try{
+            return JWT.require(algorithm).build().verify(decodePos(token));
+            }省略后面的
+```
+
+此时利用encode方法生成的token不符合base64编码规范，使用base64解码器解码时会出现乱码
+
+还可以用其他算法比如AES对称算法加密全部token
+虽然更安全了，但是消耗的资源也更多了
+
+如何避免攻击者截取网络用户token数据而盗取用户身份？
+HTTP是明文传输，传输时任何节点都可以被抓包而拿到用户信息
+于是有了HTTPS，只能看见请求的域名，而看不到请求去了域名下的哪个地址
+
+
+
 ## Token
 
 **令牌**
@@ -2931,3 +3027,150 @@ token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJuYW1lIjoicGFu
 }
 ```
 
+
+
+### 实例
+
+需求：用户有更新密码权限，但是只能更新自己的密码
+如果更新密码逻辑为： 用户提交新密码和当前用户ID
+那么用户可以把ID改为其他用户的，更改其他用户密码
+
+因此，用户只提交新密码，用户ID由后端从token中读出当前用户ID
+
+token是我发的，相信token，不相信用户
+
+```
+@PostMapping("passwords")
+public ResultVO passwords(@RequestBody User user,            登陆拦截器解密token获取用户的id注入到这里
+                          @RequestAttribute(RequestAttributeConstant.UID)String uid){
+    return userService.updatePassword(uid,user.getPassword())
+					  .thenReturn(ResultVO.success(Map.of()))
+
+}
+
+@Modifying
+@Query("update usertest u set u.password=:password where u.id = :uid")
+public ResultVO updatePassword(String password, String uid);使得这里的id是从token中拿的，而不是用户自己设置的
+```
+
+思路
+创建JWT组件进行加密/解密必要信息
+
+> 选择一个加密算法 algorithm 然后定义 encode 和 decode 方法
+
+Controller登录方法，用户登录成功后将用户的ID/role等信息加密位token放到header后返回前端
+
+> encode方法将 map 对象放到payload里，只需要往encode里传入 由 id,role等信息构成键值对的map对象
+
+前端将 token 存储到sessionstorage 避免因为页面刷新而丢失
+前端每次请求都在header里携带token等数据信息
+
+> 其实用户访问  login 登录完成后，login登录方法就把token塞到 request里了
+
+登录拦截器，解密header token中必要的信息比如id放到request对象里
+Controller方法 注入request中用户的新信息进行操作
+
+
+
+JWT --> login 创建 token并放入 request --> 访问其他页面 拦截后preHandler解密token中必须信息  -->Controller方法
+
+
+
+刚才尝试写方法运行时发现一些东西
+跟数据库相关的，需要引入依赖 jdbc，不然比如CRUD，@Modifying 一类跟数据库有关的都用不了
+
+
+
+
+
+
+
+## OpenAPI
+
+API文档，用来说明各个组件，方法是干什么的
+不用跑去看源码
+如果API做得很好，那么使用API的人就能用的很轻松
+
+前后端分离，前端不需要知道后端的源码是什么，只需要看了API说明文档后会用就行
+
+遵循OpenAPI规范定义API，就可以用文档生成工具展示API，用自动测试工具测试
+
+### API文档生成工具
+
+**Swagger**
+一组围绕 OpenAPI 规范构建的开源工具
+可以帮助设计/构建/记录和使用 REST API
+
+**Springdoc**
+自动生成 JSON/YAML/HTML格式的API文档
+此文档可以用 swagger 注解完成
+
+Springdoc 在 Swagger 基础上开发，是对他的进一步封装
+所以用Springdoc
+
+**添加依赖**
+
+```
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.3.0</version>
+</dependency>
+```
+
+
+
+然后启动主函数后可以去浏览器地址 查看API文档
+
+```
+http://localhost:8080/swagger-ui/index.html
+http://localhost:8080/v3/api-docs/
+```
+
+这两个地址是默认的地址，注意拦截器不要把它俩拦截了！
+
+<img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241024224450447.png" alt="image-20241024224450447" style="zoom: 33%;" /> 
+
+显示方法的 类型 ，请求地址，点开还有更多细节
+
+
+
+那么这个API文档如何设置更详细呢？
+使用注解！
+
+### 注解
+
+- @Tag
+  修饰Controller类，用于接口分组
+  属性Name 分组标签名称 同名的类的方法在文档里是一起的，可以用中文
+
+  ```
+  @Tag(name="登录")
+  public class AdminController {
+  public ResultVO getUsers()
+  public ResultVO getUser(@PathVariable String account)
+  }
+  @Tag(name="登录")
+  public class LoginController {
+  public ResultVO login(@RequestBody User user)
+  public ResultVO login1(@RequestBody User01 user01)
+  public ResultVO login2
+  public ResultVO welcome
+  }
+  ```
+
+  <img src="https://cdn.jsdelivr.net/gh/Hushyo/img@main/img/image-20241024224848629.png" alt="image-20241024224848629" style="zoom: 33%;" />  
+
+- @Operation
+  修饰Controller方法
+  属性
+  Summary 接口显示信息
+  Description 详细描述
+  Parameters 描述输入参数注解数组
+  Responses 描述响应注解数组
+
+- @Parameters
+  描述操作输入参数
+
+- @ApiResponse
+  描述操作的响应结果
