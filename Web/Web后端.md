@@ -1796,6 +1796,17 @@ public ResultVO postAddress(@RequestBody Address address){······}
 
 
 
+## @RequestAttribute
+
+根据键直接获取Request对象中数据
+
+```
+public ResultVO welcome(@RequestAttribute("role")String role)
+把 request 里键为  role  的值拿过来 注入到变量 role 里
+```
+
+
+
 ## HTTP对象注入
 
 Controller方法 支持注入
@@ -2714,7 +2725,7 @@ private ObjectMapper objectMapper;
 
 
 
-于是
+
 
 ### TypeReference\<T>
 
@@ -2746,3 +2757,177 @@ TypeReference\<T>抽象类，通过创建子类，把泛型具体化
 加密/解密算法 适合敏感数据的加密传输
 
 这部分有兴趣就了解
+
+
+
+## 拦截器
+
+
+
+登录业务
+
+```java
+@PostMapping("login2")
+public ResultVO login2(@RequestBody User01 user01, HttpServletResponse response){
+    User01 user = userService.getUser01(user01.getUserName());
+    if(user == null || !passwordEncoder.matches(user01.getPassword(),user.getPassword())){
+        return ResultVO.error(Code.LOGIN_ERROR);
+    }
+    //上面用于确认登录是否成功
+    
+    //成功后 签发 token
+    String result = jwtComponent.encode(Map.of("name",user.getUserName(),"role",user.getRole()));
+    
+    					键值对表示
+    response.addHeader("token",result); //把 result 塞入 请求的header中 作为token
+    response.addHeader("role",user.getRole());
+
+    return ResultVO.success(user);
+}
+```
+
+ 以下是 header 中的内容，在 addHeader里 设置 key名字不能是中文，中文在header里不显示
+如果 addHeader("abc",result)  那么下面第一行的 token 就会变成 abc
+
+```
+token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJuYW1lIjoicGFuZyIsImlhdCI6MTcyOTc1ODUwOCwiZXhwIjoxNzI5ODQ0OTA4fQ.mYeCH6G_eEOK1kefHADnxAFJ-LK4mENjb25YFHfzSO4
+role: admin
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 24 Oct 2024 08:28:28 GMT
+```
+
+
+
+正式进入拦截器
+
+### **Interceptors**
+
+HandlerInterceptor接口 （org.springframework.web.servlet.HandlerInterceptor）
+
+- Boolean preHandler() 方法
+  controller方法执行前 回调这个方法，如果它返回false 则controller方法不继续执行
+  也就是 来了请求，对应请求处理方法执行前，先调用这个方法
+- Void postHandler() 方法
+  在 preHandler() 返回 true 后 ，在执行完 controller方法后回调
+- afterCompletion 方法，在  postHandler方法执行后回调
+- Object handle 封装被拦截方法对象
+
+声明拦截器为组件，方便往拦截器里注入组件
+
+这个是个接口，所以需要创建实现类作为拦截器
+
+
+
+假如向 登录成功 界面发起请求
+登录成功了那么根据我们的登录业务 header里应该已经塞了 token
+
+```
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class LoginInterceptor implements HandlerInterceptor {
+
+    private final JWTComponent jwtComponent;//构造函数注入，注意 final 修饰
+
+    @Override 重写方法
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    //先拿到 token
+        String token = request.getHeader("token");
+        if(token == null){
+            throw myException.builder().code(Code.UNAUTHORIZED).build();
+        }
+	//请求里没有token就抛异常，未登录
+	
+	//如果登陆了，先解密，然后拿token里的常用属性
+        DecodedJWT decodedJWT = jwtComponent.decode(token);
+        String name = decodedJWT.getClaim("name").asString();
+        String role = decodedJWT.getClaim("role").asString();
+    //把这些属性塞到 request 里 使用
+        request.setAttribute("name", name);
+        request.setAttribute("role", role);
+    //返回 true，使得 controller方法可以继续执行
+        return true;
+    }
+}
+```
+
+welcom页面 直接从token中拿role进行欢迎
+
+```
+@PostMapping("welcome")
+    public ResultVO welcome(@RequestAttribute("role")String role){
+        log.debug(role);
+        return ResultVO.success(Map.of("msg","欢迎"));
+    }
+```
+
+
+
+### WebMvcConfigurer
+
+创建拦截器的实现类后是不起作用的，我们在这个类里有提到过拦截哪个路径的请求了吗？并没有
+
+我们需要创建一个 **实现**了 WebMvcConfigurer 接口 的 **配置** 类
+并 重写相关方法来声明注册拦截器等组件
+
+重写哪个？  void addInterceptors(InterceptorRegistry registry) 自动注入拦截器注册对象
+registry是自动注入的，直接用（必须声明方法所在类为组件才能接收注入哦）
+
+InterceptorRegistry 对象方法
+addInterceptor() 添加拦截器组件
+addPathPatterns() 添加拦截路径
+excludePathPatterns() 添加排除路径（不拦这里的路径）
+
+可以声明多个拦截器，它们会按顺序拦截
+
+```
+@Configuration //注意声明为配置类
+@RequiredArgsConstructor  //构造函数注入
+public class WebMvcConfig implements WebMvcConfigurer {
+                            //实现接口
+    private final LoginInterceptor loginInterceptor;//注入
+
+    @Override //重写这个方法
+    public void addInterceptors(InterceptorRegistry registry) {
+    
+        registry.addInterceptor(loginInterceptor)
+                .addPathPatterns("/api/**")
+                .excludePathPatterns("/api/login2");
+        WebMvcConfigurer.super.addInterceptors(registry);
+        
+    }
+}
+```
+
+当一个请求匹配到拦截器的路径模式时，Spring MVC会按照拦截器链中的顺序调用每个拦截器的 `preHandle` 方法。
+如果 `preHandle` 方法返回 `true`，那么请求会向下传递到下一个拦截器，直到所有的拦截器都处理完毕，然后请求会被传递到对应的Controller
+
+我们直接向 api/welcome 发出请求时，被拦截，调用loginInterceptor里的 preHandler方法
+该方法处理结果是抛出异常，然后由 全局异常处理类中的方法处理这种异常，处理结果是返回一个 ResultVO.error(Code.UNAUTHORIZED)
+
+```
+POST localhost:8080/api/welcome
+{
+  "code": 401,
+  "message": "未登录"
+}
+```
+
+
+
+登陆后，带着token过去（这里直接拿到token）
+preHandler（）方法通过 并且把 role 以键值对形式塞入 request里，传到Controller方法，这个方法直接拿request里的 role并返回
+ResultVO.success(Map.of("msg","欢迎"));
+
+```
+POST localhost:8080/api/welcome
+token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJuYW1lIjoicGFuZyIsImlhdCI6MTcyOTc2MDIwMiwiZXhwIjoxNzI5ODQ2NjAxfQ.RdPey66nunRw9vQZO2qKYMqyBhbU_0vkV6YW7ccUClo
+{
+  "code": 200,
+  "data": {
+    "msg": "欢迎"
+  }
+}
+```
+
